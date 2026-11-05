@@ -1,0 +1,404 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "FWMVCDEF.CH"
+
+// Cabe�alho (master)
+#DEFINE EXECMVCNCOL_CAB_ALIAS                1
+#DEFINE EXECMVCNCOL_CAB_MODEL                2
+#DEFINE EXECMVCNCOL_CAB_CAMPOS               3
+#DEFINE EXECMVCNCOL_CAB_CAMPOS_NOME          1
+#DEFINE EXECMVCNCOL_CAB_CAMPOS_VALOR         2
+#DEFINE EXECMVCNCOL_CAB_CAMPOS_METODO        3
+
+// Itens (grids)
+#DEFINE EXECMVCNCOL_ITENS_ALIAS              1
+#DEFINE EXECMVCNCOL_ITENS_MODEL              2
+#DEFINE EXECMVCNCOL_ITENS_LINHAS             3
+#DEFINE EXECMVCNCOL_ITENS_CHVUNIQUE          4
+#DEFINE EXECMVCNCOL_ITENS_LINHAS_CAMPOS_NOME   1
+#DEFINE EXECMVCNCOL_ITENS_LINHAS_CAMPOS_VALOR  2
+#DEFINE EXECMVCNCOL_ITENS_LINHAS_CAMPOS_METODO 3
+
+/*--------------------------------------------------------------------------------±±
+±± Programa  | MVCExec | Autor | Henrique Freitas Alves | Data | 14/04/2023       ±±
+±±--------------------------------------------------------------------------------±±
+±± Descricao | Um unificador de rotinas automáticas para o MVC.                   ±±
+±±--------------------------------------------------------------------------------±±
+±± Parametros| n_Opera => A operação.                                             ±±
+±±           |   3 => Inclusão.                                                   ±±
+±±           |   4 => Alteração.                                                  ±±
+±±           |   5 => Exclusão.                                                   ±±
+±±           | c_Model => O fonte onde se encontra o model MVC.                   ±±
+±±           | a_DadCab => Array com os dados dos formulários pais do MVC.        ±±
+±±           |   [1] => O primeiro nível define o formulário em si.               ±±
+±±           |   [1][1] => O Alias da tabela.                                     ±±
+±±           |   [1][2] => O Model master ou detail da tabela no MVC.             ±±
+±±           |   [1][3] => Array com os campos.                                   ±±
+±±           |   [1][3][1] => Um campo.                                           ±±
+±±           |   [1][3][1][1] => O nome do campo.                                 ±±
+±±           |   [1][3][1][2] => O valor do campo.                                ±±
+±±           |   [1][3][1][3] => Se o campo deve ser pelo método load ou set.     ±±
+±±           |                O método load vai colocar independente das regras   ±±
+±±           |                seguindo apenas o tipo da variável e o tamanho.     ±±
+±±           |                O método set irá passar pelas validações do campo.  ±±
+±±           |                Padrão (vazio) é set.                               ±±
+±±           |                "L" => Load.                                        ±±
+±±           |                "S" => Set.                                         ±±
+±±           | a_DadItens => Array com os dados dos grids em MVC.                 ±±
+±±           |   [1] => O primeiro nível define o grid em si.                     ±±
+±±           |   [1][1] => O Alias da tabela.                                     ±±
+±±           |   [1][2] => O Model detail da tabela no MVC.                       ±±
+±±           |   [1][3] => Array com os registros.                                ±±
+±±           |   [1][3][1] => 1º registro.                                        ±±
+±±           |   [1][3][1][1] => Um campo.                                        ±±
+±±           |   [1][3][1][1][1] => O nome do campo.                              ±±
+±±           |   [1][3][1][1][2] => O valor do campo.                             ±±
+±±           |   [1][3][1][1][3] => Se o campo deve ser pelo método load ou set.  ±±
+±±           |                      O método load vai colocar independente        ±±
+±±           |                      das regras seguindo apenas o tipo da variável ±±
+±±           |                      e o tamanho.                                  ±±
+±±           |                      O método set irá passar pelas validações      ±±
+±±           |                      do campo.                                     ±±
+±±           |                      Padrão (vazio) é set.                         ±±
+±±           |                      "L" => Load.                                  ±±
+±±           |                      "S" => Set.                                   ±±
+±±           | @c_Mensagem => Mensagem de retorno.                                ±±
+±±           | a_Details => Array os detalhes da operação.                        ±±
+±±           |   [1] => Registros incluídos.                                      ±±
+±±           |   [2] => Registros alterados.                                      ±±
+±±           |   [3] => Registros excluídos.                                      ±±
+±±           |   [4] => Itens incluídos.                                          ±±
+±±           |   [5] => Itens alterados.                                          ±±
+±±           |   [6] => Itens excluídos.                                          ±±
+±±--------------------------------------------------------------------------------±±
+±± Retorno   | l_Ret => Dado lógico para verificar a execução do processo.        ±±
+±±           |     .T. => Executou o processo.                                    ±±
+±±           |     .F. => Não executou o processo por alguma falha.               ±±
+±±--------------------------------------------------------------------------------±±
+±± Analista Resp.|  Data  | Manutencao Efetuada                                   ±±
+±±--------------------------------------------------------------------------------±±
+±±               |  /  /  |CH XXXXX -                                             ±±
+±±--------------------------------------------------------------------------------*/
+/*/{Protheus.doc} MVCExec
+Um unificador de rotinas automáticas para o MVC.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 14/04/2023
+@param n_Opera, numeric, A operação.<br>3 => Inclusão.<br>4 => Alteração.<br>5 => Exclusão.
+@param c_Model, character, O fonte onde se encontra o model MVC.
+@param a_DadCab, array, a_DadCab => Array com os dados dos formulários pais do MVC.<br>[1] => O primeiro nível define o formulário em si.<br>[1][1] => O Alias da tabela.<br>[1][2] => O Model master ou detail da tabela no MVC.<br>[1][3] => Array com os campos.<br>[1][3][1] => Um campo.<br>[1][3][1][1] => O nome do campo.<br>[1][3][1][2] => O valor do campo.<br>[1][3][1][3] => Se o campo deve ser pelo método load ou set. O método load vai colocar independente das regras seguindo apenas o tipo da variável e o tamanho.O método set irá passar pelas validações do campo.Padrão (vazio) é set.<br>"L" => Load.<br>"S" => Set.
+@param a_DadItens, array, Array com os dados dos grids em MVC.<br>[1] => O primeiro nível define o grid em si.<br>[1][1] => O Alias da tabela.<br>[1][2] => O Model detail da tabela no MVC.<br>[1][3] => Array com os registros.<br>[1][3][1] => 1º registro.<br>[1][3][1][1] => Um campo.<br>[1][3][1][1][1] => O nome do campo.<br>[1][3][1][1][2] => O valor do campo.<br>[1][3][1][1][3] => Se o campo deve ser pelo método load ou set. O método load vai colocar independente das regras seguindo apenas o tipo da variável e o tamanho. O método set irá passar pelas validações do campo. Padrão (vazio) é set. <br>"L" => Load. <br>"S" => Set.
+@param c_Mensagem, character, Mensagem de retorno.
+@param a_Details, array, Array os detalhes da operação.<br>[1] => Registros incluídos.<br>[2] => Registros alterados.<br>[3] => Registros excluídos.<br>[4] => Itens incluídos.<br>[5] => Itens alterados.<br>[6] => Itens excluídos.
+@return logical, l_Ret => Dado lógico para verificar a execução do processo.<br>[.T. => Executou o processo.]<br>[.F. => Não executou o processo por alguma falha.].
+/*/
+User Function MVCExecG(n_Opera, c_Model, a_DadCab, a_DadItens, c_Mensagem, a_Details) //U_MVCExec
+
+    Local o_Model   := FwLoadModel(c_Model)
+    Local o_ModelCab:= Nil
+    Local o_ModelIte:= Nil
+    Local o_Struct  := Nil
+    Local a_CposStru:= {}
+    Local a_Busca   := {}
+    Local a_RegInc  := {0,0,0,0,0,0}
+    Local n_Pos     := 0
+    Local n_i       := 0
+    Local n_k       := 0
+    Local n_j       := 0
+    Local n_l       := 0
+    Local l_Ret     := .T.
+    Local l_AchouLinha:= .T.
+
+    Default a_DadCab   := {}
+    Default a_DadItens := {{}}
+    Default a_Details  := {0,0,0,0,0,0}
+
+    If ( n_Opera == 3 )
+        n_Opera := MODEL_OPERATION_INSERT
+    ElseIf ( n_Opera == 4 )
+        n_Opera := MODEL_OPERATION_UPDATE
+    ElseIf ( n_Opera == 5 )
+        n_Opera := MODEL_OPERATION_DELETE
+    EndIf
+
+    For n_i := 1 To Len(a_DadCab)
+
+        // Temos que definir qual a operação deseja: 3 - Inclusão / 4 - Alteração / 5 -Exclusão
+        o_Model:SetOperation(n_Opera)
+
+        // Antes de começar a atribuir os valores dos campos, devo ativar o modelo
+        o_Model:Activate()
+
+        //Seleciono o alias do MVC trabalhado
+        DbSelectArea(a_DadCab[n_i][EXECMVCNCOL_CAB_ALIAS])
+
+        //Pego o model do meu componente master
+        o_ModelCab := o_Model:GetModel(a_DadCab[n_i][EXECMVCNCOL_CAB_MODEL])
+        o_ModelCab:Activate()
+
+        If ( n_Opera != MODEL_OPERATION_DELETE )
+            //Pego a estrutura do alias do componente master
+            o_Struct := o_ModelCab:GetStruct()
+            a_CposStru := o_Struct:GetFields()
+
+            For n_k := 1 To Len(a_DadCab[n_i][EXECMVCNCOL_CAB_CAMPOS])
+
+                //Verifico se o campo existe na estrutura
+                n_Pos := AScan( a_CposStru, { |x|  AllTrim(x[3]) == AllTrim(a_DadCab[n_i][EXECMVCNCOL_CAB_CAMPOS][n_k][1]) } )
+
+                If ( n_Pos > 0 )
+                    //Verifico se é por set ou load
+                    If ( Len(a_DadCab[n_i][EXECMVCNCOL_CAB_CAMPOS][n_k]) == 2 .OR. a_DadCab[n_i][EXECMVCNCOL_CAB_CAMPOS][n_k][EXECMVCNCOL_CAB_CAMPOS_METODO] == "S")
+                        //Caso ele não consiga por motivo de validação, retorna falso
+                        If ( !o_ModelCab:SetValue(a_DadCab[n_i][EXECMVCNCOL_CAB_CAMPOS][n_k][EXECMVCNCOL_CAB_CAMPOS_NOME], a_DadCab[n_i][EXECMVCNCOL_CAB_CAMPOS][n_k][EXECMVCNCOL_CAB_CAMPOS_VALOR]) )
+
+                            l_Ret := .F.
+                        EndIf
+                    Else
+                        o_ModelCab:LoadValue(a_DadCab[n_i][EXECMVCNCOL_CAB_CAMPOS][n_k][EXECMVCNCOL_CAB_CAMPOS_NOME], a_DadCab[n_i][EXECMVCNCOL_CAB_CAMPOS][n_k][EXECMVCNCOL_CAB_CAMPOS_VALOR])
+                    EndIf
+                EndIf
+            Next n_k
+
+            If ( l_Ret )
+
+                If ( n_Opera == MODEL_OPERATION_UPDATE )
+                    a_RegInc[2]++
+                Else
+                    a_RegInc[1]++
+                EndIf
+
+                For n_j := 1 To Len(a_DadItens[n_i])
+
+                    //Seleciono o alias do MVC trabalhado
+                    DbSelectArea(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_ALIAS])
+
+                    //Pego o model do meu componente detail
+                    o_ModelIte := o_Model:GetModel(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_MODEL])
+
+                    //Sempre me certifico de que posso inserir linhas
+                    o_ModelIte:SetNoInsertLine(.F.)
+
+                    // Pego a estrutura de dados do item
+                    o_Struct := o_ModelIte:GetStruct()
+                    a_CposStru := o_Struct:GetFields()
+
+                    //Para evitar confusões, aqui estou a nível de registros. Ou seja, estou tratando o 1° registro da tabela
+                    For n_k := 1 To Len(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS])
+
+                        l_AchouLinha := .F.
+                        //Se for alteração, busco se tem alguma linha já existente com os dados únicos.
+                        If ( n_Opera == MODEL_OPERATION_UPDATE )
+
+                            If ( Len(a_DadItens[n_i][n_j]) == 3 )
+                            
+                                If ( !Empty(o_ModelIte:aUnique) ) 
+                                    AAdd(a_DadItens[n_i][n_j], RetChvUnique(o_ModelIte))
+                                EndIf
+
+                            ElseIf ( Len(a_DadItens[n_i][n_j]) >= 4 .AND. !Empty(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_CHVUNIQUE]) )
+
+                                If ( !Empty(o_ModelIte:aUnique) ) 
+                                    a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_CHVUNIQUE] := RetChvUnique(o_ModelIte)
+                                EndIf
+
+                            EndIf
+
+                            If ( Len(a_DadItens[n_i][n_j]) > 3 .AND. !Empty(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_CHVUNIQUE]) )
+
+                                a_Busca := {}
+
+                                For n_l := 1 To Len(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_CHVUNIQUE])
+
+                                    n_Pos := AScan(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k], ;
+                                                    {|x| x[EXECMVCNCOL_ITENS_LINHAS_CAMPOS_NOME] == a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_CHVUNIQUE][n_l] })
+
+                                    If ( n_Pos > 0 )
+                                        AAdd(a_Busca, { a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_CHVUNIQUE][n_l], ;
+                                                        a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k][n_Pos][EXECMVCNCOL_ITENS_LINHAS_CAMPOS_VALOR] })
+                                    EndIf
+
+                                Next n_l
+
+                                // Se encontrou a linha, apenas altera (não cria linha nova)
+                                // Se não encontrou, cria e segue o fluxo padrão
+                                l_AchouLinha := o_ModelIte:SeekLine(a_Busca/*<a_Busca>*/)
+                            EndIf
+                        EndIf
+
+                        //Caso seja uma alteração e exista algum campo com o nome ITEMDEL igual a "S", devo localizar e encerrar a linha.
+                        If ( AScan(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k], {|x| x[EXECMVCNCOL_ITENS_LINHAS_CAMPOS_NOME] == "ITEMDEL" .AND. x[EXECMVCNCOL_ITENS_LINHAS_CAMPOS_VALOR] == "S" }) > 0 )
+                            If ( l_AchouLinha )
+
+                                o_ModelIte:DeleteLine()
+
+                                a_RegInc[6]++
+                            Else
+                                l_Ret := .F.
+                                c_Mensagem := "Não foi possível localizar a linha para exclusão."
+                                Exit
+                            EndIf
+                        Else
+                            // Incluímos uma linha nova
+                            /* ATENÇÃO: Os itens são criados em uma estrutura de grid (FORMGRID), portanto já é criada uma primeira linha
+                            branco automaticamente, desta forma começamos a 0inserir novas linhas a partir da 2ª vez */
+                            If ( !l_AchouLinha ) 
+                                If ( MODEL_OPERATION_INSERT == n_Opera .AND. n_k > 1 )
+                                    // Incluímos uma nova linha do item caso a linha de itens seja maior que a quantidade de linhas já existentes.
+                                    If ( n_k > o_ModelIte:Length() .AND. o_ModelIte:AddLine() <> n_k )
+                                        /* Se por algum motivo o método AddLine() não consegue incluir a linha, ele retorna a quantidade de linhas que já
+                                        existem no grid. Se conseguir, retorna a quantidade mais um (linha que acabou de ser criada)
+                                        */
+                                        l_Ret := .F.
+                                        Exit
+                                    EndIf
+                                ElseIf ( MODEL_OPERATION_UPDATE == n_Opera )
+                                    // Incluímos uma nova linha do item caso a linha de itens seja maior que a quantidade de linhas já existentes.
+                                    If ( o_ModelIte:Length() == o_ModelIte:AddLine())
+                                        /* Se por algum motivo o método AddLine() não consegue incluir a linha, ele retorna a quantidade de linhas que já
+                                        existem no grid. Se conseguir, retorna a quantidade mais um (linha que acabou de ser criada)
+                                        */
+                                        l_Ret := .F.
+                                        Exit
+                                    EndIf
+                                EndIf
+                            EndIf
+
+                            //Depois de criar a linha, vamos para o nível de campo do array
+                            For n_l := 1 To Len(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k])
+                                // Verifica se os campos passados existem na estrutura de item
+                                n_Pos := AScan(a_CposStru, { |x| AllTrim(x[3]) == AllTrim(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k][n_l][EXECMVCNCOL_ITENS_LINHAS_CAMPOS_NOME])})
+
+                                If ( n_Pos > 0 )
+                                    //Verifico se é por set ou load
+                                    If ( Len(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k][n_l]) == 2 .OR. a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k][n_l][EXECMVCNCOL_ITENS_LINHAS_CAMPOS_METODO] == "S" )
+
+                                        If ( !o_ModelIte:SetValue(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k][n_l][EXECMVCNCOL_ITENS_LINHAS_CAMPOS_NOME], a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k][n_l][EXECMVCNCOL_ITENS_LINHAS_CAMPOS_VALOR]) )
+
+                                            l_Ret := .F.
+                                            Exit
+                                        EndIf
+                                    Else
+                                        o_ModelIte:LoadValue(a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k][n_l][EXECMVCNCOL_ITENS_LINHAS_CAMPOS_NOME], a_DadItens[n_i][n_j][EXECMVCNCOL_ITENS_LINHAS][n_k][n_l][EXECMVCNCOL_ITENS_LINHAS_CAMPOS_VALOR])
+                                    EndIf
+                                EndIf
+                            Next n_l
+
+                            If ( n_Opera == MODEL_OPERATION_INSERT )
+
+                                a_RegInc[4]++
+                            ElseIf ( n_Opera == MODEL_OPERATION_UPDATE )
+
+                                If ( l_AchouLinha )
+                                    a_RegInc[5]++
+                                Else
+                                    a_RegInc[4]++
+                                EndIf
+                            EndIf
+                        EndIf
+
+                        If ( !l_Ret )
+                            Exit
+                        EndIf
+                    Next n_k
+                    If ( !l_Ret )
+                        Exit
+                    EndIf
+                Next n_j
+            EndIf
+        EndIf
+
+        If ( l_Ret )
+
+            If ( o_Model:VldData() )
+
+                o_Model:CommitData()
+
+                If ( n_Opera == MODEL_OPERATION_DELETE )
+                    a_RegInc[3]++
+                EndIf
+
+                a_Details[1] += a_RegInc[1]
+                a_Details[2] += a_RegInc[2]
+                a_Details[3] += a_RegInc[3]
+                a_Details[4] += a_RegInc[4]
+                a_Details[5] += a_RegInc[5]
+                a_Details[6] += a_RegInc[6]
+            Else
+                l_Ret := .F.
+                c_Mensagem := o_Model:GetErrorMessage()[6]
+                Exit
+            EndIf
+        Else
+            c_Mensagem := GetMsgErro(o_Model)
+            Exit
+        EndIf
+
+        a_RegInc := {0, 0, 0, 0, 0, 0}
+
+        o_Model:DeActivate()
+    Next n_i
+
+    FreeObj(o_Model)
+    If ( o_ModelCab != Nil )
+        FreeObj(o_ModelCab)
+    EndIf
+    If ( o_ModelIte != Nil )
+        FreeObj(o_ModelIte)
+    EndIf
+    If ( o_Struct != Nil )
+        FreeObj(o_Struct)
+    EndIf
+
+    ASize(a_CposStru, 0)
+
+Return ( l_Ret )
+/*/{Protheus.doc} RetChvUnique
+Retorna a chave única como o nome dos campos de acordo com o modelo.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 17/03/2026
+@param o_ModelIte, object, O modelo de itens.
+@return array, Array com a chave por nome de campo.
+/*/
+Static Function RetChvUnique(o_ModelIte)
+
+Local a_Chave := {}
+Local n_i     := 0
+
+For n_i := 1 To Len(o_ModelIte:aUnique)
+
+    AAdd(a_Chave, o_ModelIte:aHeader[o_ModelIte:aUnique[n_i]][2])
+Next n_i
+
+Return ( a_Chave )
+
+
+/*/{Protheus.doc} GetMsgErro
+    Extrai a mensagem de erro mais detalhada do modelo MVC.
+    @type  Static Function
+    @author Gabriel Lacerda Correia
+    @since 20/10/2026
+    @version 1.0
+    @param o_Model, object, modelo de execu��o MVC utilizado
+    @return c_Msg, character, retorna a mensagem de erro
+    /*/
+Static Function GetMsgErro(o_Model)
+    Local a_Erro := {}
+    Local c_Msg  := ""
+
+    If o_Model == Nil
+        Return "Modelo n�o informado."
+    EndIf
+
+    a_Erro := o_Model:GetErrorMessage()
+
+    If ValType(a_Erro) == "A" .And. Len(a_Erro) >= 6 .And. !Empty(a_Erro[6])
+        c_Msg := AllTrim(cValToChar(a_Erro[6])) 
+
+    Else
+        c_Msg := "Erro de valida��o no modelo MVC (sem mensagem retornada)."
+    EndIf
+
+Return c_Msg

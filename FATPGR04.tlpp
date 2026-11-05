@@ -1,0 +1,1724 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TBICONN.CH"
+
+#DEFINE NCOL_MOD1_OPERACAO    1
+#DEFINE NCOL_MOD1_COD_FILIAL  2 
+#DEFINE NCOL_MOD1_COD_TABELA  3
+#DEFINE NCOL_MOD1_COD_PRODUTO 4
+#DEFINE NCOL_MOD1_NOVO_PRECO  5
+#DEFINE NCOL_MOD1_NOVO_DATVIG 6
+
+#DEFINE NCOL_MOD2_OPERACAO    1
+#DEFINE NCOL_MOD2_COD_FILIAL  2
+#DEFINE NCOL_MOD2_COD_CLI     3
+#DEFINE NCOL_MOD2_LOJA_CLI    4
+#DEFINE NCOL_MOD2_COD_PRODUTO 5
+#DEFINE NCOL_MOD2_NOVO_PRECO  6
+#DEFINE NCOL_MOD2_DESCONTO    7
+
+#DEFINE NCOL_MOD3_COD_CLI       1
+#DEFINE NCOL_MOD3_LOJA_CLI      2
+#DEFINE NCOL_MOD3_COD_VEND      3
+#DEFINE NCOL_MOD3_NOME_FANTASIA 4
+#DEFINE NCOL_MOD3_COD_TABELA    5
+#DEFINE NCOL_MOD3_GRUPO_VENDAS  6
+#DEFINE NCOL_MOD3_SEGMENTO      7
+
+#DEFINE NCOL_MOD4_OPERACAO     1
+#DEFINE NCOL_MOD4_COD_FILIAL   2
+#DEFINE NCOL_MOD4_GRUPO_VENDAS 3
+#DEFINE NCOL_MOD4_UF           4
+#DEFINE NCOL_MOD4_TARIFA_FRETE 5
+#DEFINE NCOL_MOD4_VLR_KG       6
+
+User Function TesteFATPGR04()
+
+PREPARE ENVIRONMENT EMPRESA "01" FILIAL "01" USER "ADMIN" PASSWORD "@!1q2w3e!@"
+
+    U_FATPGR04()
+
+RESET ENVIRONMENT
+
+Return
+
+/*/{Protheus.doc} FATPGR04
+Tela para gerenciar as ações envolvendo a tabela de preço.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 10/02/2025
+/*/
+User Function FATPGR04() //U_FATPGR04()
+
+Local o_Dlg     := Nil
+Local o_FontTit := Nil
+Local o_FontBut := Nil
+Local o_PainTop := Nil
+Local o_PainMid := Nil
+Local o_PainBot := Nil
+Local o_ButtonEx:= Nil
+Local o_ButtonIm:= Nil
+Local o_ButtonLg:= Nil
+Local o_Menu    := Nil
+Local o_MenuItem:= Nil
+Local c_Versao  := "1.0."
+Local c_Users   := AllTrim(SuperGetMV("GR_FATPG4", .F., "000445" , Nil))
+Local n_RightDlg:= 450
+
+If ( RetCodUsr() $ c_Users .OR. FWIsAdmin() )
+
+    o_Dlg := TDialog():New(000/*[nTop]*/, 000/*[nLeft]*/, 180/*[nBottom]*/, n_RightDlg/*[nRight]*/, "Central de preço V"+c_Versao/*[cCaption]*/,/*[uParam6]*/,/*[uParam7]*/,/*[uParam8]*/,/*[uParam9]*/,/*[nClrText]*/,/*[nClrBack]*/,/*[uParam12]*/,/*[oWnd]*/, .T./*[lPixel]*/,/*[uParam15]*/,/*[uParam16]*/,/*[uParam17]*/,/*[nWidth]*/,/*[nHeight]*/,/*[lTransparent]*/)
+
+    o_PainTop  := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/,/*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/,/*[nClrText]*/,/*[nClrBack]*/, 000/*[nWidth]*/, 035/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+    o_PainTop:Align := CONTROL_ALIGN_TOP
+
+    o_PainMid  := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/,/*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/,/*[nClrText]*/,/*[nClrBack]*/, 000/*[nWidth]*/, 000/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+    o_PainMid:Align := CONTROL_ALIGN_ALLCLIENT
+
+    o_PainBot  := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/,/*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/,/*[nClrText]*/,/*[nClrBack]*/, 000/*[nWidth]*/, 032/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+    o_PainBot:Align := CONTROL_ALIGN_BOTTOM
+
+    o_FontTit := TFont():New("Calibri"/*[cName]*/,/*[uPar2]*/, 030/*[nHeight]*/,/*[uPar4]*/, .T./*[lBold]*/,/*[uPar6]*/,/*[uPar7]*/,/*[uPar8]*/,/*[uPar9]*/, .F./*[lUnderline]*/, .F./*[lItalic]*/ )
+
+    o_FontBut := TFont():New("Calibri"/*[cName]*/,/*[uPar2]*/, 024/*[nHeight]*/,/*[uPar4]*/, .T./*[lBold]*/,/*[uPar6]*/,/*[uPar7]*/,/*[uPar8]*/,/*[uPar9]*/, .F./*[lUnderline]*/, .F./*[lItalic]*/ )
+
+    TSay():New(005/*[nRow]*/, 005/*[nCol]*/, {|| OemToAnsi("Central de formação de preço"+CRLF+"Centralizador das rotinas.") }/*[bText]*/, o_Dlg/*[oWnd]*/,/*[cPicture]*/, o_FontTit/*[oFont]*/,/*[uParam7]*/,/*[uParam8]*/,/*[uParam9]*/, .T./*[lPixels]*/,/*[nClrText]*/,/*[nClrBack]*/, 300/*[nWidth]*/, 030/*[nHeight]*/,/*[uParam15]*/,/*[uParam16]*/,/*[uParam17]*/,/*[uParam18]*/,/*[uParam19]*/,/*[lHTML]*/, 0/*[nTxtAlgHor]*/,/*[nTxtAlgVer]*/)
+
+    o_ButtonEx := TButton():New(005/*[nRow]*/, 005/*[nCol]*/, OemToAnsi("Exportar")/*[cCaption]*/, o_PainMid/*[oWnd]*/, {|| }/*[bAction]*/, 065/*[nWidth]*/, 015/*[nHeight]*/,/*[uParam8]*/, o_FontBut/*[oFont]*/,/*[uParam10]*/, .T./*[lPixel]*/,/*[uParam12]*/,/*[uParam13]*/,/*[uParam14]*/,/*[bWhen]*/,/*[uParam16]*/,/*[uParam17]*/)
+
+    o_ButtonIm := TButton():New(005/*[nRow]*/, 075/*[nCol]*/, OemToAnsi("Importar")/*[cCaption]*/, o_PainMid/*[oWnd]*/, {|| }/*[bAction]*/, 065/*[nWidth]*/, 015/*[nHeight]*/,/*[uParam8]*/, o_FontBut/*[oFont]*/,/*[uParam10]*/, .T./*[lPixel]*/,/*[uParam12]*/,/*[uParam13]*/,/*[uParam14]*/,/*[bWhen]*/,/*[uParam16]*/,/*[uParam17]*/)
+
+    o_ButtonLg := TButton():New(005/*[nRow]*/, 145/*[nCol]*/, OemToAnsi("Logs")/*[cCaption]*/, o_PainMid/*[oWnd]*/, {|| RelLog() }/*[bAction]*/, 035/*[nWidth]*/, 015/*[nHeight]*/,/*[uParam8]*/, o_FontBut/*[oFont]*/,/*[uParam10]*/, .T./*[lPixel]*/,/*[uParam12]*/,/*[uParam13]*/,/*[uParam14]*/,/*[bWhen]*/,/*[uParam16]*/,/*[uParam17]*/)
+
+    o_Menu := TMenu():New(/*[nTop]*/,/*[nLeft]*/,/*[nHeight]*/,/*[nWidth]*/, .T./*[lPopUp]*/,/*[cBmpName]*/,/*[oWnd]*/,/*[nClrNoSelect]*/,/*[nClrSelect]*/,/*[cArrowUpNoSel]*/,/*[cArrowUpSel]*/,/*[cArrowDownNoSel]*/,/*[cArrowDownSel]*/ )
+
+    MenuIt("1", "Alteração da tabela de preço", @o_Menu)
+
+    MenuIt("2", "Alteração do preço fixo no cliente", @o_Menu)
+
+    MenuIt("3", "Alterações no cliente", @o_Menu)
+
+    MenuIt("4", "Alteração da matriz de frete", @o_Menu)
+
+    o_ButtonIm:SetPopUpMenu(o_Menu)
+
+    o_Menu := TMenu():New(/*[nTop]*/,/*[nLeft]*/,/*[nHeight]*/,/*[nWidth]*/, .T./*[lPopUp]*/,/*[cBmpName]*/,/*[oWnd]*/,/*[nClrNoSelect]*/,/*[nClrSelect]*/,/*[cArrowUpNoSel]*/,/*[cArrowUpSel]*/,/*[cArrowDownNoSel]*/,/*[cArrowDownSel]*/ )
+
+    o_MenuItem := TMenuItem():New(o_Menu/*<oParent>*/, "Tabela de preço"/*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {|| ExpArq("1") }/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+    o_Menu:Add(o_MenuItem)
+
+    o_MenuItem := TMenuItem():New(o_Menu/*<oParent>*/, "Preço fixo no cliente"/*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {|| ExpArq("2") }/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+    o_Menu:Add(o_MenuItem)
+
+    o_MenuItem := TMenuItem():New(o_Menu/*<oParent>*/, "Cliente"/*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {|| ExpArq("3") }/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+    o_Menu:Add(o_MenuItem)
+
+    o_MenuItem := TMenuItem():New(o_Menu/*<oParent>*/, "Matriz de frete"/*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {|| ExpArq("4") }/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+    o_Menu:Add(o_MenuItem)
+
+    o_ButtonEx:SetPopUpMenu(o_Menu)
+
+    TButton():New(010/*[nRow]*/, (n_RightDlg / 2) - 50/*[nCol]*/, "Sair"/*[cCaption]*/, o_PainBot/*[oWnd]*/, {|| o_Dlg:End() }/*[bAction]*/, 045/*[nWidth]*/, 015/*[nHeight]*/,/*[uParam8]*/, o_FontBut/*[oFont]*/,/*[uParam10]*/, .T./*[lPixel]*/,/*[uParam12]*/,/*[uParam13]*/,/*[uParam14]*/,/*[bWhen]*/,/*[uParam16]*/,/*[uParam17]*/)
+
+    o_Dlg:Activate(/*[uParam1]*/,/*[uParam2]*/,/*[uParam3]*/, .T./*[lCentered]*/,/*[bValid]*/,/*[uParam6]*/,/*[bInit]*/,/*[uParam8]*/,/*[uParam9]*/ )
+
+Else
+    Help(Nil, Nil, "Sem autorização - FATPGR04", Nil, "Você não tem acesso para utilizar. [GR_FATPG4]",;
+         1, 0, Nil, Nil, Nil, Nil, Nil, {"Favor, solicitar para o departamento comercial/vendas."})
+EndIf
+
+Return Nil
+/*/{Protheus.doc} MenuIt
+Função que cria os menus padrão da importação.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 12/02/2025
+@param c_Modelo, character, O modelo do menu que será criado.
+@param c_Titulo, character, O título da opção.
+@param o_Menu, object, O objeto de menu.
+/*/
+Static Function MenuIt(c_Modelo, c_Titulo, o_Menu)
+
+Local o_MenuCab := Nil
+Local o_ItemMenu:= Nil
+
+o_MenuCab := TMenuItem():New(o_Menu/*<oParent>*/, c_Titulo/*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {||}/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+o_Menu:Add(o_MenuCab)
+
+o_ItemMenu := TMenuItem():New(o_MenuCab/*<oParent>*/, "Exportar modelo"  /*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {|| GeraArq(c_Modelo)}/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+o_MenuCab:Add(o_ItemMenu)
+
+o_ItemMenu := TMenuItem():New(o_MenuCab/*<oParent>*/, "Importar arquivo"/*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {|| ImpArq(c_Modelo) }/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+o_MenuCab:Add(o_ItemMenu)
+
+Return Nil
+/*/{Protheus.doc} GeraArq
+Faço a criação do modelo de arquivo para a importação.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 10/02/2025
+@param c_Modelo, character, O modelo de geração do arquivo.
+/*/
+Static Function GeraArq(c_Modelo)
+
+Local a_Cpos    := {}
+Local a_Cab     := {}
+Local a_Linhas  := {"", CRLF, CRLF}
+Local c_Caminho := cGetFile(""/*[cMascara]*/, "Selecione um Local para salvar o arquivo."/*[cTitulo]*/,/*[nMascpadrao]*/,/*[cDirinicial]*/, /*[lAbrir]*/, GETF_RETDIRECTORY+GETF_LOCALHARD+GETF_LOCALFLOPPY/*[nOpcoes]*/,/*[lArvore]*/,/*[lKeepCase]*/)
+Local c_NomArq  := "Importador_preço_"+c_Modelo+".csv"
+Local c_IdentArq:= ""
+Local n_Handle  := 0
+Local n_i       := 0
+
+If ( !Empty(c_Caminho) )
+
+    If ( Right(c_Caminho, 1) <> "\" )
+        c_Caminho += "\"
+    EndIf
+  
+    a_Cab   := RetCab(c_Modelo, @c_NomArq, @c_IdentArq)
+
+    a_Linhas[1] += "Modelo;"
+    a_Linhas[1] += c_Modelo+";"
+    a_Linhas[1] += c_IdentArq+";"
+
+    For n_i := 1 To Len(a_Cab)
+
+        a_Linhas[2] += a_Cab[n_i][1]+";"
+        a_Linhas[3] += a_Cab[n_i][2]+";"
+    Next n_i
+
+    n_Handle := FCreate( c_Caminho+"\"+c_NomArq /*<cArquivo>*/, /*[nAtributo]*/, /*[xParam3]*/, /*[lChangeCase]*/)
+
+    If ( n_Handle = -1 )
+        MsgAlert(Str(Ferror()))
+    Else
+        For n_i := 1 To Len(a_Linhas)
+
+            FWrite(n_Handle/*<nHandle>*/, a_Linhas[n_i]/*<cBuffer>*//*,[nQtdBytes]*/)
+        Next n_i
+
+        FClose(n_Handle)
+
+        FWAlertSuccess("Arquivo criado com sucesso!", "Sucesso - FATPGR04")
+        ShellExecute("OPEN", c_NomArq, "", c_Caminho, 1)
+    EndIf
+EndIf
+
+FWFreeArray(a_Cpos)
+
+Return Nil
+/*/{Protheus.doc} RetCab
+Retorna o cabeçalho padrão dos arquivos.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 10/02/2025
+@param c_Modelo, character, O modelo do arquivo.
+@param [c_NomArq], character, Referenciado, o nome do arquivo que será gerado
+@param [c_IdentArq], character, Referenciado, o identificador do arquivo que será gerado.
+@return array, O cabeçalho com as informações do arquivo.
+/*/
+Static Function RetCab(c_Modelo, c_NomArq, c_IdentArq)
+
+Local a_Cab     := {}
+
+If ( c_Modelo == "1" )
+
+    a_Cab := {;
+               {"OPERACAO", "E=Excluir/A=Alterar e Incluir/I=Inativar"                                 }; //NCOL_MOD1_OPERACAO
+             , {"FILIAL", "Filial que deve ser alterado."                                              }; //NCOL_MOD1_COD_FILIAL
+             , {"COD_TABELA", "Código da tabela de preço"                                              }; //NCOL_MOD1_COD_TABELA
+             , {"COD_PRODUTO", "Código do produto"                                                     }; //NCOL_MOD1_COD_PRODUTO
+             , {"NOVO_PRECO", "Novo preço do produto."                                                 }; //NCOL_MOD1_NOVO_PRECO
+             , {"DATA_VIGENCIA", "A data de vigência. (Se vazio, considera a data logada no protheus.)"}; //NCOL_MOD1_NOVO_DATVIG
+             }
+
+    c_NomArq := "Alteração_tabela_preço.csv"
+    c_IdentArq := "Alteração da tabela de preço"
+
+ElseIf ( c_Modelo == "2" )
+
+    a_Cab := {;
+                {"OPERACAO", "E=Excluir/A=Alterar e Incluir"};//NCOL_MOD2_OPERACAO
+             ,  {"FILIAL", "Filial que deve ser alterado."};  //NCOL_MOD2_COD_FILIAL
+             ,  {"COD_CLI", "Código do cliente"};             //NCOL_MOD2_COD_CLI      
+             ,  {"LOJA_CLI", "Loja do cliente"};              //NCOL_MOD2_LOJA_CLI      
+             ,  {"COD_PRODUTO", "Código do produto"};         //NCOL_MOD2_COD_PRODUTO
+             ,  {"NOVO_PRECO", "Novo preço do produto."};     //NCOL_MOD2_NOVO_PRECO
+             ,  {"DESCONTO", "1=Sim/2=Não"};                  //NCOL_MOD2_DESCONTO
+             }
+
+    c_NomArq := "Alteração_preço_cliente.csv"
+    c_IdentArq := "Alteração de preço fixo do cliente"
+
+ElseIf ( c_Modelo == "3" )
+
+    a_Cab := {;
+                {"COD_CLI"       , "Código do cliente"};           //NCOL_MOD3_COD_CLI      
+             ,  {"LOJA_CLI"      , "Loja do cliente"};             //NCOL_MOD3_LOJA_CLI      
+             ,  {"COD_VEND"      , "Código do vendedor"};          //NCOL_MOD3_COD_VEND
+             ,  {"NOME_FANTASIA" , "O nome fantasia do cliente"};  //NCOL_MOD3_NOME_FANTASIA
+             ,  {"TABELA_PRECO"  , "A tabela de preço do cliente"};//NCOL_MOD3_COD_TABELA
+             ,  {"GRUPO_VENDAS"  , "O grupo de vendas do cliente"};//NCOL_MOD3_GRUPO_VENDAS
+             ,  {"SEGMENTO"      , "O segmento do cliente"};       //NCOL_MOD3_SEGMENTO
+             }
+
+    c_NomArq := "Alterações_cliente.csv"
+    c_IdentArq := "Alteração gerais no cliente"
+
+ElseIf ( c_Modelo == "4" )
+
+    a_Cab := {;
+                {"OPERACAO"      , "E=Excluir/A=Alterar e Incluir"};//NCOL_MOD4_OPERACAO
+             ,  {"FILIAL"        , "Filial matriz de frete"};       //NCOL_MOD4_COD_FILIAL
+             ,  {"GRUPO_VENDAS"  , "Grupo de vendas"};              //NCOL_MOD4_GRUPO_VENDAS
+             ,  {"UF"            , "Estado"};                       //NCOL_MOD4_UF
+             ,  {"TARIFA_FRETE"  , "Tarifa do frete"};              //NCOL_MOD4_TARIFA_FRETE
+             ,  {"VLR_KG"        , "Valor por KG"};                 //NCOL_MOD4_VLR_KG
+             }
+             
+    c_NomArq := "Alteração_matriz_frete.csv"
+    c_IdentArq := "Alteração da matriz do frete da filial"
+EndIf
+
+Return ( a_Cab )
+/*/{Protheus.doc} ImpArq
+Faço a importação do arquivo .csv com os dados dos títulos do contas a pagar.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 10/02/2025
+@param c_Modelo, character, O modelo do arquivo.
+/*/
+Static Function ImpArq(c_Modelo)
+
+Local a_Linhas  := {}
+Local a_Cab     := {}
+Local c_Caminho := tFileDialog("Arquivo .csv (*.csv)"/*[cMascara]*/, "Escolha o arquivo .csv com os dados preenchidos!"/*[cTitulo]*/, /*[nMascpadrao]*/, /*[cDirinicial]*/, .F./*[lSalvar]*/,/*[nOpcoes]*/)
+Local c_Titulo  := ""
+Local c_MsgRun  := ""
+Local c_Mensagem:= ""
+Local c_Solucao := ""
+Local n_Handle  := FOpen(c_Caminho/*cArq*/, /*nModo*/, /*xParam3*/, /*lChangeCase*/.F.)
+Local n_i       := 0
+Local n_QtdAlt  := 0
+Local n_QtdInt  := 0
+Local n_QtdExc  := 0
+Local n_QtdInat := 0
+Local l_Ret     := .T.
+
+If ( n_Handle == -1 )
+    MsgAlert(Str(Ferror()))
+Else
+
+    a_Linhas := U_CsvToArr(n_Handle)
+
+    If ( Empty(a_Linhas) )
+
+        c_Titulo := "Arquivo sem conteúdo!"
+        c_Mensagem := "Não foi possível ler nenhuma linha do arquivo!"
+        c_Solucao := "Por favor, gere o arquivo modelo novamente e inclua os dados com a estrutura presente."
+        l_Ret := .F.
+
+    ElseIf ( UPPER(RTrim(a_Linhas[1][1])) != "MODELO" .OR. Empty(a_Linhas[1][2]) )
+
+        c_Titulo := "Arquivo sem modelo!"
+        c_Mensagem := "Não foi possível ler o modelo do arquivo gerado!"
+        c_Solucao := "Por favor, gere o o arquivo modelo novamente e inclua os dados com a estrutura presente."
+        l_Ret := .F.
+
+    ElseIf ( a_Linhas[1][2] != c_Modelo )
+
+        c_Titulo := "Modelo inválido!"
+        c_Mensagem := "Você selecionou o arquivo com o modelo errado ["+a_Linhas[1][2]+"] para a operação que pede o modelo ["+c_Modelo+"]!"
+        c_Solucao := "Por favor, gere o o arquivo modelo novamente e inclua os dados com a estrutura presente."
+        l_Ret := .F.
+
+    ElseIf ( Len(a_Linhas) < 4 )
+
+        c_Titulo := "Arquivo inválido!"
+        c_Mensagem := "O arquivo precisa ter, no mínimo, três linhas!"
+        c_Solucao := "Por favor, gere o o arquivo modelo novamente e inclua os dados com a estrutura presente."
+        l_Ret := .F.
+    Else
+        a_Cab := RetCab(c_Modelo)
+
+        For n_i := 1 To Len(a_Cab)
+
+            If ( n_i > Len(a_Linhas[2]) )
+            
+                c_Titulo := "Cabeçalho inválido!"
+                c_Mensagem := "Na posição "+CValToChar(n_i)+" não tem nenhum valor, mas deveria ter o valor: ["+a_Cab[n_i][1]+"]!"
+                c_Solucao := "Por favor, gere o o arquivo modelo novamente e inclua os dados com a estrutura presente."
+                l_Ret := .F.
+                Exit
+            ElseIf ( a_Cab[n_i][1] != Upper(RTrim(a_Linhas[2][n_i])) )
+
+                c_Titulo := "Campo inválido!"
+                c_Mensagem := "Na posição "+CValToChar(n_i)+" o campo está como ["+a_Linhas[2][n_i]+"], mas deveria ser ["+a_Cab[n_i][1]+"]!"
+                c_Solucao := "Por favor, gere o o arquivo modelo novamente e inclua os dados com a estrutura presente."
+                l_Ret := .F.
+                Exit
+            EndIf
+        Next n_i
+    EndIf 
+
+    If ( l_Ret )
+
+        Do Case 
+
+            Case c_Modelo == "1"
+
+                c_MsgRun := "Alterando tabela de preço"
+            Case c_Modelo == "2"
+
+                c_MsgRun := "Alterando relação produto x cliente"
+
+            Case c_Modelo == "3"
+
+                c_MsgRun := "Alterando cliente"
+
+            Case c_Modelo == "4"
+
+                c_MsgRun := "Alterando matrix de frete"
+        EndCase
+
+        FWMsgRun(/*[oComponent]*/, {|| l_Ret := Processa(c_Modelo, a_Linhas, @n_QtdAlt, @n_QtdInt, @n_QtdExc, @n_QtdInat, @c_Mensagem)}/*<bAction>*/, "Alterações em massa."/*[cHeader]*/, c_MsgRun+"..."/*[cText]*/)
+
+        If ( !l_Ret )
+
+            c_Titulo := "Erro ao processar o arquivo! "
+            c_Solucao := "Agir de acordo com a mensagem."
+            l_Ret := .F.
+        EndIf
+    EndIf
+
+    If ( !l_Ret )
+
+        Help(Nil, Nil, c_Titulo+" - FATPGR04", Nil, c_Mensagem,;
+             1, 0, Nil, Nil, Nil, Nil, Nil, {c_Solucao})
+    Else 
+
+        If ( n_QtdAlt+n_QtdInt+n_QtdExc+n_QtdInat == 0 )
+
+            FWAlertInfo("Nenhuma alteração foi processada!", "Informativo - FATPGR04")
+        Else
+            c_Mensagem := ""
+
+            If ( n_QtdInt > 0 )
+                c_Mensagem := "Incluídos: "+CValToChar(n_QtdInt)
+            EndIf
+
+            If ( n_QtdAlt > 0 )
+
+                If ( !Empty(c_Mensagem) )
+                    c_Mensagem += ";"+CRLF
+                EndIf
+
+                c_Mensagem += "Alterados: "+CValToChar(n_QtdAlt)
+            EndIf
+
+            If ( n_QtdExc > 0 )
+
+                If ( !Empty(c_Mensagem) )
+                    c_Mensagem += ";"+CRLF
+                EndIf
+
+                c_Mensagem += "Excluídos: "+CValToChar(n_QtdExc)
+            EndIf
+
+            If ( n_QtdInat > 0 )
+
+                If ( !Empty(c_Mensagem) )
+                    c_Mensagem += ";"+CRLF
+                EndIf
+
+                c_Mensagem += "Inativados: "+CValToChar(n_QtdInat)
+            EndIf
+
+            c_Mensagem += "."
+
+            FWAlertSuccess("Alterações incluídas!"+CRLF+" Seguem a quantidade de alterações: "+CRLF+c_Mensagem, "Sucesso - FATPGR04")
+        EndIf
+    EndIf 
+EndIf
+
+FWFreeArray(a_Linhas)
+
+Return Nil
+/*/{Protheus.doc} Processa
+Faço o processamento de acordo com o modelo.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 11/02/2025
+@param c_Modelo, character, O modelo da importação.
+@param a_Linhas, array, O array de linhas já posicionado na linha de importação.
+@param [n_QtdAlt], numeric, A quantidade de registros alterados.
+@param [n_QtdInt], numeric, A quantidade de registros incluídos.
+@param [n_QtdExc], numeric, A quantidade de registros excluídos.
+@param [n_QtdInat], numeric, A quantidade de registros inativados.
+@param [c_Mensagem], character, A mensagem de erro, caso necessário.
+@return logical, Se a alteração foi feita com sucesso.
+/*/
+Static Function Processa(c_Modelo, a_Linhas, n_QtdAlt, n_QtdInt, n_QtdExc, n_QtdInat, c_Mensagem)
+
+Local a_Areas      := {FWGetArea()}
+Local a_CodTabelas := {}  // { c_DA1FILIAL+c_DA1CODTAB }
+Local n_i          := 0
+Local l_Ret        := .T.
+Local l_IncReg     := .F.
+
+Default c_Modelo  := ""
+Default a_Linhas  := {}
+
+BEGIN TRANSACTION
+
+If ( c_Modelo == "1" )
+
+    AAdd(a_Areas, DA0->(FWGetArea()))
+    AAdd(a_Areas, DA1->(FWGetArea()))
+    AAdd(a_Areas, SB1->(FWGetArea()))
+
+    For n_i := 5 To Len(a_Linhas)
+
+        DbSelectArea("SA2")
+        DbSetOrder(1) //DA1_FILIAL, DA1_CODTAB, DA1_CODPRO, DA1_INDLOT, DA1_ITEM, R_E_C_N_O_, D_E_L_E_T_
+        DbGoTop()
+        
+        If ( MsSeek(a_Linhas[n_i][NCOL_MOD1_COD_FILIAL]+a_Linhas[n_i][NCOL_MOD1_COD_TABELA]+a_Linhas[n_i][NCOL_MOD1_COD_PRODUTO]) )
+
+            If ( a_Linhas[n_i][NCOL_MOD1_OPERACAO] == "A" )
+
+                l_IncReg  := .F.
+                l_Ret := .T.
+
+            ElseIf ( a_Linhas[n_i][NCOL_MOD1_OPERACAO] == "E" )
+
+                l_IncReg  := Nil
+                l_Ret := .T.
+
+            ElseIf ( a_Linhas[n_i][NCOL_MOD1_OPERACAO] == "I" )
+
+                l_IncReg  := Nil
+                l_Ret := .T.
+            Else
+                l_Ret := .F.
+                c_Mensagem := "Operação inválida!"
+                Exit
+            EndIf
+        Else
+            If ( a_Linhas[n_i][NCOL_MOD1_OPERACAO] == "A" )
+
+                l_IncReg  := .T.
+                l_Ret := .T.
+
+            ElseIf ( a_Linhas[n_i][NCOL_MOD1_OPERACAO] == "I" )
+
+                l_Ret := Nil
+                c_Mensagem := "Operação de inativação não pode ser acionada quando não há o registro!"
+
+            ElseIf ( a_Linhas[n_i][NCOL_MOD1_OPERACAO] == "E" )
+
+                l_Ret := .F.
+                c_Mensagem := "Operação de exclusão não pode ser acionada quando não há o registro!"
+                Exit
+            Else
+                l_Ret := .F.
+                c_Mensagem := "Operação inválida! ["+a_Linhas[n_i][NCOL_MOD1_OPERACAO]+"]"
+                Exit
+            EndIf
+        EndIf
+
+        If ( l_Ret )
+
+
+            If ( l_IncReg == Nil )
+
+                If ( AScan(a_CodTabelas, {|x| x[1] == a_Linhas[n_i][NCOL_MOD1_COD_TABELA]}) == 0 )
+                    AAdd(a_CodTabelas, {a_Linhas[n_i][NCOL_MOD1_COD_TABELA], a_Linhas[n_i][NCOL_MOD1_COD_FILIAL] + a_Linhas[n_i][NCOL_MOD1_COD_TABELA]})
+                EndIf
+
+                If ( a_Linhas[n_i][NCOL_MOD1_OPERACAO] == "E" )
+
+                    U_LogAlt("DA1"/*[cTabela]*/, DA1->(Recno())/*[nRecno]*/, "D_E_L_E_T_"/*[c_Campos]*/, ""/*[x_De]*/, "*"/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                    n_QtdExc++
+
+                    Reclock("DA1", .F.)
+                    DA1->(DbDelete())
+                    MsUnlock()
+                ElseIf ( a_Linhas[n_i][NCOL_MOD1_OPERACAO] == "I" )
+                    U_LogAlt("DA1"/*[cTabela]*/, DA1->(Recno())/*[nRecno]*/, "DA1_ATIVO"/*[c_Campos]*/, DA1->DA1_ATIVO/*[x_De]*/, "2"/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                    n_QtdInat++
+
+                    Reclock("DA1", .F.)
+                    Replace DA1_ATIVO With "2"
+                    MsUnlock()
+                EndIf
+            ElseIf ( l_IncReg .OR. ( VldCpo(DA1->DA1_PRCVEN, a_Linhas[n_i][NCOL_MOD1_NOVO_PRECO]) .OR. DA1->DA1_ATIVO != "1" ) )
+
+                If ( AScan(a_CodTabelas, {|x| x[1] == a_Linhas[n_i][NCOL_MOD1_COD_TABELA]}) == 0 )
+                    AAdd(a_CodTabelas, {a_Linhas[n_i][NCOL_MOD1_COD_TABELA], a_Linhas[n_i][NCOL_MOD1_COD_FILIAL] + a_Linhas[n_i][NCOL_MOD1_COD_TABELA]})
+                EndIf
+                
+                Reclock("DA1", l_IncReg)
+                If ( l_IncReg )
+
+                    n_QtdInt++
+
+                    Replace DA1_FILIAL With a_Linhas[n_i][NCOL_MOD1_COD_FILIAL]
+                    Replace DA1_CODTAB With a_Linhas[n_i][NCOL_MOD1_COD_TABELA]
+                    Replace DA1_ITEM   With GetNextIt(c_Modelo, a_Linhas[n_i])
+                    Replace DA1_CODPRO WIth a_Linhas[n_i][NCOL_MOD1_COD_PRODUTO]
+                    Replace DA1_ATIVO  WIth "1"
+                    Replace DA1_TPOPER WIth "4"
+                    Replace DA1_QTDLOT WIth 999999.99
+                    Replace DA1_INDLOT WIth "999999.99" //67098
+                    Replace DA1_MOEDA  WIth 1
+                    Replace DA1_DATVIG WIth a_Linhas[n_i][NCOL_MOD1_NOVO_DATVIG]
+                Else
+                    U_LogAlt("DA1"/*[cTabela]*/, DA1->(Recno())/*[nRecno]*/, "DA1_PRCVEN"/*[c_Campos]*/, DA1->DA1_PRCVEN/*[x_De]*/, a_Linhas[n_i][NCOL_MOD1_NOVO_PRECO]/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                    n_QtdAlt++
+                EndIf
+                If ( DA1->DA1_ATIVO != "1" )
+                Replace DA1_ATIVO WIth "1"
+                EndIf
+                Replace DA1_PRCVEN WIth a_Linhas[n_i][NCOL_MOD1_NOVO_PRECO]
+                MsUnlock()
+            EndIf
+        EndIf
+    Next n_i
+
+    If ( l_Ret .AND. n_QtdAlt > 0  )
+
+        FWMsgRun(/*[oComponent]*/, {|| ExpTabelaPreco(a_CodTabelas) }/*<bAction>*/, "Alterações em massa."/*[cHeader]*/, "Integrando tabela de preço..."/*[cText]*/) 
+    EndIf
+
+ElseIf ( c_Modelo == "2" )
+
+    AAdd(a_Areas, SA7->(FWGetArea()))
+    AAdd(a_Areas, SB1->(FWGetArea()))
+    AAdd(a_Areas, SA1->(FWGetArea()))
+
+    For n_i := 4 To Len(a_Linhas)
+
+        a_Linhas[n_i][NCOL_MOD2_OPERACAO]    := UPPER(RTrim(a_Linhas[n_i][NCOL_MOD2_OPERACAO]))
+        a_Linhas[n_i][NCOL_MOD2_COD_FILIAL]  := PadR(a_Linhas[n_i][NCOL_MOD2_COD_FILIAL] , TamSX3("A7_FILIAL")[1])
+        a_Linhas[n_i][NCOL_MOD2_COD_PRODUTO] := PadR(a_Linhas[n_i][NCOL_MOD2_COD_PRODUTO], TamSX3("A7_PRODUTO")[1])
+        a_Linhas[n_i][NCOL_MOD2_COD_CLI]     := PadR(a_Linhas[n_i][NCOL_MOD2_COD_CLI]    , TamSX3("A7_CLIENTE")[1])
+        a_Linhas[n_i][NCOL_MOD2_LOJA_CLI]    := PadR(a_Linhas[n_i][NCOL_MOD2_LOJA_CLI]   , TamSX3("A7_LOJA")[1])
+        a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO]  := Val(Replace(a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO], ",", "."))
+
+        If ( !VldFilial(a_Linhas[n_i][NCOL_MOD2_COD_FILIAL]) )
+
+            c_Mensagem := "A filial ["+a_Linhas[n_i][NCOL_MOD2_COD_FILIAL]+"] não foi localizada no sistema."
+            l_Ret := .F.
+            Exit
+        ElseIf ( a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO] <= 0 .AND. a_Linhas[n_i][NCOL_MOD2_OPERACAO] != "E" )
+
+            c_Mensagem := "O preço está igual ou menor que zero ["+CValToChar(a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO])+"] e não estamos excluindo o registro!"
+            l_Ret := .F.
+            Exit
+        ElseIf ( !a_Linhas[n_i][NCOL_MOD2_DESCONTO] $ "1/2" )
+
+            c_Mensagem := "O valor de que se o cliente deve aceitar desconto ["+a_Linhas[n_i][NCOL_MOD2_DESCONTO]+"] não é válido!"
+            l_Ret := .F.
+            Exit
+        ElseIf ( !VldProd(a_Linhas[n_i][NCOL_MOD2_COD_PRODUTO]) )
+
+            c_Mensagem := "O produto ["+a_Linhas[n_i][NCOL_MOD2_COD_PRODUTO]+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+        ElseIf ( !VldCli(a_Linhas[n_i][NCOL_MOD2_COD_CLI], a_Linhas[n_i][NCOL_MOD2_LOJA_CLI]) )
+
+            c_Mensagem := "O cliente ["+a_Linhas[n_i][NCOL_MOD2_COD_CLI]+"-"+a_Linhas[n_i][NCOL_MOD2_LOJA_CLI]+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+        Else
+
+            DbSelectArea("SA7")
+            DbSetOrder(1) //A7_FILIAL, A7_CLIENTE, A7_LOJA, A7_PRODUTO, R_E_C_N_O_, D_E_L_E_T_
+            DbGoTop()
+            If ( MsSeek(a_Linhas[n_i][NCOL_MOD2_COD_FILIAL]+a_Linhas[n_i][NCOL_MOD2_COD_CLI]+a_Linhas[n_i][NCOL_MOD2_LOJA_CLI]+a_Linhas[n_i][NCOL_MOD2_COD_PRODUTO]) )
+
+                If ( a_Linhas[n_i][NCOL_MOD2_OPERACAO] == "A" )
+
+                    l_IncReg  := .F.
+                    l_Ret := .T.
+
+                ElseIf ( a_Linhas[n_i][NCOL_MOD2_OPERACAO] == "E" )
+
+                    l_IncReg  := Nil
+                    l_Ret := .T.
+                Else
+                    l_Ret := .F.
+                    c_Mensagem := "Operação inválida!"
+                    Exit
+                EndIf
+            Else
+                If ( a_Linhas[n_i][NCOL_MOD2_OPERACAO] == "A" )
+
+                    l_IncReg  := .T.
+                    l_Ret := .T.
+
+                ElseIf ( a_Linhas[n_i][NCOL_MOD2_OPERACAO] == "E" )
+
+                    l_Ret := .F.
+                    c_Mensagem := "Operação de exclusão não pode ser acionada quando não há o registro!"
+                    Exit
+                Else
+                    l_Ret := .F.
+                    c_Mensagem := "Operação inválida! ["+a_Linhas[n_i][NCOL_MOD2_OPERACAO]+"]"
+                    Exit
+                EndIf
+            EndIf
+        EndIf
+
+        If ( l_Ret )
+            If ( l_IncReg == Nil )
+
+                n_QtdExc++
+
+                U_LogAlt("SA7"/*[cTabela]*/, SA7->(Recno())/*[nRecno]*/, "A7_XPRCFIX"/*[c_Campos]*/, SA7->A7_XPRCFIX/*[x_De]*/, 0/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                Reclock("SA7", .F.)
+                Replace A7_XPRCFIX With 0
+                MsUnlock()
+            ElseIf ( l_IncReg .OR. VldCpo(SA7->A7_XPRCFIX, a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO]) .OR. VldCpo(SA7->A7_XPERDS, a_Linhas[n_i][NCOL_MOD2_DESCONTO]) )
+
+                If ( VldCpo(SA7->A7_XPRCFIX, a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO]) )
+                    U_LogAlt("SA7"/*[cTabela]*/, SA7->(Recno())/*[nRecno]*/, "A7_XPRCFIX"/*[c_Campos]*/, SA7->A7_XPRCFIX/*[x_De]*/, a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO]/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+                EndIf
+
+                If ( VldCpo(SA7->A7_XPERDS, a_Linhas[n_i][NCOL_MOD2_DESCONTO]) )
+                    U_LogAlt("SA7"/*[cTabela]*/, SA7->(Recno())/*[nRecno]*/, "A7_XPERDS" /*[c_Campos]*/, SA7->A7_XPERDS /*[x_De]*/, a_Linhas[n_i][NCOL_MOD2_DESCONTO]  /*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+                EndIf
+
+                Reclock("SA7", l_IncReg)
+                If ( l_IncReg )
+
+                    n_QtdInt++
+
+                    Replace A7_FILIAL  With a_Linhas[n_i][NCOL_MOD2_COD_FILIAL]
+                    Replace A7_CLIENTE With a_Linhas[n_i][NCOL_MOD2_COD_CLI]
+                    Replace A7_LOJA    With a_Linhas[n_i][NCOL_MOD2_LOJA_CLI]
+                    Replace A7_PRODUTO WIth a_Linhas[n_i][NCOL_MOD2_COD_PRODUTO]
+                Else
+                    n_QtdAlt++
+                EndIf
+                Replace A7_XPRCFIX WIth a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO]
+                Replace A7_XPERDS  WIth a_Linhas[n_i][NCOL_MOD2_DESCONTO]
+                MsUnlock()
+
+            EndIf
+
+            U_MT370ATU()
+        EndIf
+    Next n_i
+
+ElseIf ( c_Modelo == "3" )
+
+    AAdd(a_Areas, SA1->(FWGetArea()))
+    AAdd(a_Areas, SA3->(FWGetArea()))
+    AAdd(a_Areas, SX5->(FWGetArea()))
+    AAdd(a_Areas, ACY->(FWGetArea()))
+
+    For n_i := 4 To Len(a_Linhas)
+
+        a_Linhas[n_i][NCOL_MOD3_COD_CLI]      := PadR(a_Linhas[n_i][NCOL_MOD3_COD_CLI]      , TamSX3("A1_COD")[1])
+        a_Linhas[n_i][NCOL_MOD3_LOJA_CLI]     := PadR(a_Linhas[n_i][NCOL_MOD3_LOJA_CLI]     , TamSX3("A1_LOJA")[1])
+        a_Linhas[n_i][NCOL_MOD3_COD_TABELA]   := PadR(a_Linhas[n_i][NCOL_MOD3_COD_TABELA]   , TamSX3("A1_TABELA")[1])
+        a_Linhas[n_i][NCOL_MOD3_COD_VEND]     := PadR(a_Linhas[n_i][NCOL_MOD3_COD_VEND]     , TamSX3("A1_VEND")[1])
+        a_Linhas[n_i][NCOL_MOD3_NOME_FANTASIA]:= PadR(a_Linhas[n_i][NCOL_MOD3_NOME_FANTASIA], TamSX3("A1_NREDUZ")[1])
+        a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS] := PadR(a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS] , TamSX3("A1_GRPVEN")[1])
+        a_Linhas[n_i][NCOL_MOD3_SEGMENTO]     := PadR(a_Linhas[n_i][NCOL_MOD3_SEGMENTO]     , TamSX3("A1_SATIV1")[1])
+
+        If ( !VldCli(a_Linhas[n_i][NCOL_MOD3_COD_CLI], a_Linhas[n_i][NCOL_MOD3_LOJA_CLI]) )
+
+            c_Mensagem := "O cliente ["+a_Linhas[n_i][NCOL_MOD3_COD_CLI]+"-"+a_Linhas[n_i][NCOL_MOD3_LOJA_CLI]+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+
+        ElseIf ( !Empty(a_Linhas[n_i][NCOL_MOD3_COD_VEND]) .AND. !VldVend(a_Linhas[n_i][NCOL_MOD3_COD_VEND]) )
+
+            c_Mensagem := "O vendedor ["+a_Linhas[n_i][NCOL_MOD3_COD_VEND]+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+        ElseIf ( !Empty(a_Linhas[n_i][NCOL_MOD3_COD_TABELA]) .AND. !VldCodTab(""/*[c_Filial]*/, a_Linhas[n_i][NCOL_MOD3_COD_TABELA]) )
+
+            c_Mensagem := "A tabela de preço ["+a_Linhas[n_i][NCOL_MOD3_COD_TABELA]+"] não foi localizada no sistema."
+            l_Ret := .F.
+            Exit
+            
+        ElseIf ( !Empty(a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS]) .AND. !VldGrupo(a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS]) )
+
+            c_Mensagem := "O grupo de vendas ["+a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS]+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+        ElseIf ( !Empty(a_Linhas[n_i][NCOL_MOD3_SEGMENTO]) .AND. !VldSX5("T3", a_Linhas[n_i][NCOL_MOD3_SEGMENTO]) )
+
+            c_Mensagem := "O segmento ["+a_Linhas[n_i][NCOL_MOD3_SEGMENTO]+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+        Else
+            l_Ret := .T.
+        EndIf
+
+        If ( l_Ret .AND. ( VldCpo(SA1->A1_VEND, a_Linhas[n_i][NCOL_MOD3_COD_VEND]) .OR. VldCpo(SA1->A1_TABELA, a_Linhas[n_i][NCOL_MOD3_COD_TABELA]);
+                      .OR. VldCpo(SA1->A1_NREDUZ, a_Linhas[n_i][NCOL_MOD3_NOME_FANTASIA]) .OR. VldCpo(SA1->A1_GRPVEN, a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS]);
+                      .OR. VldCpo(SA1->A1_SATIV1, a_Linhas[n_i][NCOL_MOD3_SEGMENTO]) ) )
+
+            n_QtdAlt++
+
+            Reclock("SA1", .F.)
+            If ( VldCpo(SA1->A1_VEND, a_Linhas[n_i][NCOL_MOD3_COD_VEND]) )
+
+                U_LogAlt("SA1"/*[cTabela]*/, SA1->(Recno())/*[nRecno]*/, "A1_VEND"/*[c_Campos]*/, SA1->A1_VEND/*[x_De]*/, a_Linhas[n_i][NCOL_MOD3_COD_VEND]/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                Replace A1_VEND  With a_Linhas[n_i][NCOL_MOD3_COD_VEND]
+            EndIf
+            If ( VldCpo(SA1->A1_TABELA, a_Linhas[n_i][NCOL_MOD3_COD_TABELA]) )
+
+                U_LogAlt("SA1"/*[cTabela]*/, SA1->(Recno())/*[nRecno]*/, "A1_TABELA"/*[c_Campos]*/, SA1->A1_TABELA/*[x_De]*/, a_Linhas[n_i][NCOL_MOD3_COD_TABELA]/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                Replace A1_TABELA With a_Linhas[n_i][NCOL_MOD3_COD_TABELA]
+            EndIf
+            If ( VldCpo(SA1->A1_NREDUZ, a_Linhas[n_i][NCOL_MOD3_NOME_FANTASIA]) )
+
+                U_LogAlt("SA1"/*[cTabela]*/, SA1->(Recno())/*[nRecno]*/, "A1_NREDUZ"/*[c_Campos]*/, SA1->A1_NREDUZ/*[x_De]*/, a_Linhas[n_i][NCOL_MOD3_NOME_FANTASIA]/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                Replace A1_NREDUZ With a_Linhas[n_i][NCOL_MOD3_NOME_FANTASIA]
+            EndIf
+            If ( VldCpo(SA1->A1_SATIV1, a_Linhas[n_i][NCOL_MOD3_SEGMENTO]) )
+
+                U_LogAlt("SA1"/*[cTabela]*/, SA1->(Recno())/*[nRecno]*/, "A1_SATIV1"/*[c_Campos]*/, SA1->A1_SATIV1/*[x_De]*/, a_Linhas[n_i][NCOL_MOD3_SEGMENTO]/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                Replace A1_SATIV1 With a_Linhas[n_i][NCOL_MOD3_SEGMENTO]
+            EndIf
+            If ( VldCpo(SA1->A1_GRPVEN, a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS]) )
+
+                U_LogAlt("SA1"/*[cTabela]*/, SA1->(Recno())/*[nRecno]*/, "A1_GRPVEN"/*[c_Campos]*/, SA1->A1_GRPVEN/*[x_De]*/, a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS]/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                Replace A1_GRPVEN With a_Linhas[n_i][NCOL_MOD3_GRUPO_VENDAS]
+            EndIf
+            Replace A1_X_SIM3G With ''
+            Replace A1_XIDPWL  With ''
+            Replace A1_XDTPWL  With CToD("//")
+            Replace A1_XHRPWL  With ''
+            MsUnlock()
+
+            U_FCHubPtoE( "CRMA980", {"","MODELCOMMITTTS","ZZFMASTER"} )
+        EndIf
+    Next n_i
+
+ElseIf ( c_Modelo == "4" )
+
+    AAdd(a_Areas, SA1->(FWGetArea()))
+    AAdd(a_Areas, SA3->(FWGetArea()))
+    AAdd(a_Areas, SX5->(FWGetArea()))
+    AAdd(a_Areas, ACY->(FWGetArea()))
+
+    For n_i := 4 To Len(a_Linhas)
+
+        a_Linhas[n_i][NCOL_MOD4_OPERACAO]     := UPPER(RTrim(a_Linhas[n_i][NCOL_MOD4_OPERACAO]))
+        a_Linhas[n_i][NCOL_MOD4_COD_FILIAL]   := PadR(a_Linhas[n_i][NCOL_MOD4_COD_FILIAL]  , TamSX3("ZZB_FILIAL")[1])
+        a_Linhas[n_i][NCOL_MOD4_GRUPO_VENDAS] := PadR(a_Linhas[n_i][NCOL_MOD4_GRUPO_VENDAS], TamSX3("ZZB_CANAL")[1])
+        a_Linhas[n_i][NCOL_MOD4_UF]           := PadR(a_Linhas[n_i][NCOL_MOD4_UF]          , TamSX3("ZZB_UF")[1])
+        a_Linhas[n_i][NCOL_MOD4_TARIFA_FRETE] := PadR(a_Linhas[n_i][NCOL_MOD4_TARIFA_FRETE], TamSX3("ZZB_TARFRT")[1])
+        a_Linhas[n_i][NCOL_MOD4_VLR_KG]       := Val(Replace(a_Linhas[n_i][NCOL_MOD4_VLR_KG], ",", "."))
+
+        If ( !VldFilial(a_Linhas[n_i][NCOL_MOD4_COD_FILIAL]) )
+
+            c_Mensagem := "A filial ["+a_Linhas[n_i][NCOL_MOD4_COD_FILIAL]+"] não foi localizada no sistema."
+            l_Ret := .F.
+            Exit
+        ElseIf ( !VldGrupo(a_Linhas[n_i][NCOL_MOD4_GRUPO_VENDAS]) )
+
+            c_Mensagem := "O grupo de vendas ["+a_Linhas[n_i][NCOL_MOD4_GRUPO_VENDAS]+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+        ElseIf ( !VldSX5("12", a_Linhas[n_i][NCOL_MOD4_UF]) )
+
+            c_Mensagem := "O estado ["+a_Linhas[n_i][NCOL_MOD4_UF]+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+        ElseIf ( !VldSX5("ZW", a_Linhas[n_i][NCOL_MOD4_TARIFA_FRETE]) )
+
+            c_Mensagem := "A tarifa de frete ["+a_Linhas[n_i][NCOL_MOD4_TARIFA_FRETE]+"] não foi localizada no sistema."
+            l_Ret := .F.
+            Exit
+        ElseIf ( a_Linhas[n_i][NCOL_MOD4_VLR_KG] <= 0 .AND. a_Linhas[n_i][NCOL_MOD4_OPERACAO] != "E" )
+
+            c_Mensagem := "O preço está igual ou menor que zero ["+CValToChar(a_Linhas[n_i][NCOL_MOD2_NOVO_PRECO])+"] e não estamos excluindo o registro!"
+            l_Ret := .F.
+            Exit
+        Else
+            DbSelectArea("ZZB")
+            DbSetOrder(1) //ZZB_FILIAL, ZZB_CANAL, ZZB_UF, ZZB_TARFRT, R_E_C_N_O_, D_E_L_E_T_
+            DbGoTop()
+            If ( MsSeek(a_Linhas[n_i][NCOL_MOD4_COD_FILIAL]+a_Linhas[n_i][NCOL_MOD4_GRUPO_VENDAS]+a_Linhas[n_i][NCOL_MOD4_UF]+a_Linhas[n_i][NCOL_MOD4_TARIFA_FRETE]) )
+
+                If ( a_Linhas[n_i][NCOL_MOD4_OPERACAO] == "A" )
+
+                    l_IncReg  := .F.
+                    l_Ret := .T.
+
+                ElseIf ( a_Linhas[n_i][NCOL_MOD4_OPERACAO] == "E" )
+
+                    l_IncReg  := Nil
+                    l_Ret := .T.
+                Else
+                    l_Ret := .F.
+                    c_Mensagem := "Operação inválida!"
+                    Exit
+                EndIf
+            Else
+                If ( a_Linhas[n_i][NCOL_MOD4_OPERACAO] == "A" )
+
+                    l_IncReg  := .T.
+                    l_Ret := .T.
+
+                ElseIf ( a_Linhas[n_i][NCOL_MOD4_OPERACAO] == "E" )
+
+                    l_Ret := .F.
+                    c_Mensagem := "Operação de exclusão não pode ser acionada quando não há o registro!"
+                    Exit
+                Else
+                    l_Ret := .F.
+                    c_Mensagem := "Operação inválida! ["+a_Linhas[n_i][NCOL_MOD4_OPERACAO]+"]"
+                    Exit
+                EndIf
+            EndIf
+        EndIf
+
+        If ( l_Ret )
+            If ( l_IncReg == Nil )
+            
+                n_QtdExc++
+
+                U_LogAlt("ZZB"/*[cTabela]*/, ZZB->(Recno())/*[nRecno]*/, "D_E_L_E_T_"/*[c_Campos]*/, ""/*[x_De]*/, "*"/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                Reclock("ZZB", .F.)
+                ZZB->(DbDelete())
+                MsUnlock()
+            ElseIf ( l_IncReg .OR. VldCpo(ZZB->ZZB_VLRKG, a_Linhas[n_i][NCOL_MOD4_VLR_KG]) )
+
+                U_LogAlt("ZZB"/*[cTabela]*/, ZZB->(Recno())/*[nRecno]*/, "ZZB_VLRKG"/*[c_Campos]*/, ZZB->ZZB_VLRKG/*[x_De]*/, a_Linhas[n_i][NCOL_MOD4_VLR_KG]/*[x_Para]*/,/*[d_Quando]*/,/*[c_Quem]*/, FunName()/*[c_Origem]*/,""/*[c_Obs]*/)
+
+                Reclock("ZZB", l_IncReg)
+                If ( l_IncReg )
+
+                    n_QtdInt++
+
+                    Replace ZZB_FILIAL With a_Linhas[n_i][NCOL_MOD4_COD_FILIAL]
+                    Replace ZZB_CANAL  With a_Linhas[n_i][NCOL_MOD4_GRUPO_VENDAS]
+                    Replace ZZB_UF     With a_Linhas[n_i][NCOL_MOD4_UF]
+                    Replace ZZB_TARFRT WIth a_Linhas[n_i][NCOL_MOD4_TARIFA_FRETE]
+                Else
+                    n_QtdAlt++
+                EndIf
+                Replace ZZB_VLRKG WIth a_Linhas[n_i][NCOL_MOD4_VLR_KG]
+                MsUnlock()
+            EndIf
+        EndIf
+
+    Next n_i
+EndIf
+
+If ( !l_Ret )
+    c_Mensagem += CRLF+"Erro na linha ["+CValToChar(n_i)+"]."
+    DisarmTransaction()
+EndIf
+
+END TRANSACTION
+
+For n_i := 1 To Len(a_Areas)
+
+    FWRestArea(a_Areas[n_i])
+Next n_i
+
+Return ( l_Ret )
+/*/{Protheus.doc} GetNextIt
+Pego o próximo item de acordo com a entidade do modelo.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 11/02/2025
+@param c_Modelo, character, O modelo.
+@param a_Linhas, array, O array de linhas do arquivo.
+@return character, O valor do item.
+/*/
+Static Function GetNextIt(c_Modelo, a_Linhas)
+
+Local a_Area    := FWGetArea()
+Local c_Query   := ""
+Local c_AliasQRY:= ""
+
+If ( c_Modelo == '1' )
+
+    c_Query := "SELECT MAX(DA1_ITEM) AS DA1_ITEM FROM "+RetSqlName("DA1")+" DA1 (NOLOCK) WHERE DA1_FILIAL = '"+a_Linhas[NCOL_MOD1_COD_FILIAL]+"' AND DA1_CODTAB = '"+a_Linhas[NCOL_MOD1_COD_TABELA]+"' AND D_E_L_E_T_ = ''"
+
+    c_AliasQRY := MpSysOpenQuery(c_Query,/*c_AliasQRY*/,,"TOPCONN")
+
+    If ( (c_AliasQRY)->(EoF()) )
+        c_Item := StrZero(1, TamSX3("DA1_ITEM")[1])
+    Else
+        If ( Empty((c_AliasQRY)->DA1_ITEM) )
+
+            c_Item := StrZero(1, TamSX3("DA1_ITEM")[1])
+        Else
+            c_Item := StrZero(Val((c_AliasQRY)->DA1_ITEM), TamSX3("DA1_ITEM")[1]) //67098
+        EndIf
+    EndIf
+
+    (c_AliasQRY)->(DbCloseArea())
+
+ElseIf ( c_Modelo == '2' )
+
+ElseIf ( c_Modelo == '3' )
+
+EndIf
+
+FWRestArea(a_Area)
+
+Return ( c_Item )
+/*/{Protheus.doc} VldProd
+Valida o produto.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 11/02/2025
+@param c_Produto, character, O código do produto.
+@return logical, Se o produto é valido [.T.].
+/*/
+Static Function VldProd(c_Produto)
+
+Local l_Ret     := .F.
+
+DbSelectArea("SB1")
+DbSetOrder(1) //B1_FILIAL, B1_COD, R_E_C_N_O_, D_E_L_E_T_
+DbGoTop()
+If ( MsSeek(xFilial("SB1")+c_Produto) )
+
+    l_Ret := .T.
+EndIf
+
+Return ( l_Ret )
+/*/{Protheus.doc} VldCli
+Valida o cliente.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 12/02/2025
+@param c_Cliente, character, Código de cliente.
+@param c_Loja, character, A loja do cliente.
+@return logical, Se o cliente é válido [.T.].
+/*/
+Static Function VldCli(c_Cliente, c_Loja)
+
+Local l_Ret     := .F.
+
+DbSelectArea("SA1")
+DbSetOrder(1) //A1_FILIAL, A1_COD, A1_LOJA, R_E_C_N_O_, D_E_L_E_T_
+DbGoTop()
+If ( MsSeek(XFilial("SA1")+c_Cliente+c_Loja) )
+
+    l_Ret := .T.
+EndIf
+
+Return ( l_Ret )
+/*/{Protheus.doc} VldVend
+Valida o vendedor.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 11/02/2025
+@param c_CodVend, character, O código do vendedor.
+@return logical, Se o vendedor é valido.
+/*/
+Static Function VldVend(c_CodVend)
+
+Local l_Ret     := .F.
+
+DbSelectArea("SA3")
+DbSetOrder(1) //A3_FILIAL, A3_COD, R_E_C_N_O_, D_E_L_E_T_
+DbGoTop()
+If ( MsSeek(XFilial("SA3")+c_CodVend) )
+
+    l_Ret := .T.
+EndIf
+
+Return ( l_Ret )
+/*/{Protheus.doc} VldCodTab
+Valida a tabela de preço.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 11/02/2025
+@param [c_Filial], character, A filial da tabela de preço.
+@param c_CodTab, character, O código da tabela de preço.
+@return logical, Se a tabela de preço é válida.
+/*/
+Static Function VldCodTab(c_Filial, c_CodTab)
+
+Local c_Query   := ""
+Local c_AliasQRY:= ""
+Local l_Ret     := .F.
+
+c_Query := "SELECT TOP 1 REC = R_E_C_N_O_ FROM "+RetSqlName("DA0")+" DA0 (NOLOCK)"+CRLF
+If ( Empty(c_Filial) )
+    c_Query += "WHERE DA0_CODTAB = '"+c_CodTab+"'"
+Else
+    c_Query += "WHERE DA0_FILIAL = '"+c_Filial+"'"
+    c_Query += "AND   DA0_CODTAB = '"+c_CodTab+"'"
+EndIf
+c_Query += "AND   D_E_L_E_T_ = ''"
+
+c_AliasQRY := MpSysOpenQuery(c_Query,/*c_AliasQRY*/,,"TOPCONN")
+
+If ( (c_AliasQRY)->(!EoF()) )
+
+    l_Ret := .T.
+EndIf
+
+(c_AliasQRY)->(DbCloseArea())
+
+Return ( l_Ret )
+/*/{Protheus.doc} VldFilial
+Valida a filial.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 11/02/2025
+@param c_CodVend, character, O código da filial.
+@return logical, Se a filial é valida.
+/*/
+Static Function VldFilial(c_CodFil)
+
+Local a_AreaSM0 := SM0->(FWGetArea())
+Local l_Ret     := .F.
+
+DbSelectArea("SM0")
+DbSetOrder(1) //M0_CODIGO, M0_CODFIL, R_E_C_N_O_, D_E_L_E_T_
+DbGoTop()
+If ( MsSeek(cEmpAnt+PadR(c_CodFil, TamSX3("DA1_FILIAL")[1])) )
+
+    l_Ret := .T.
+EndIf
+
+FWRestArea(a_AreaSM0)
+
+Return ( l_Ret )
+/*/{Protheus.doc} VldGrupo
+Valida o grupo.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 11/02/2025
+@param c_Grupo, character, O código da filial.
+@return logical, Se a filial é valida.
+/*/
+Static Function VldGrupo(c_Grupo)
+
+Local l_Ret     := .F.
+
+DbSelectArea("ACY")
+DbSetOrder(1) //ACY_FILIAL, ACY_GRPVEN, R_E_C_N_O_, D_E_L_E_T_
+DbGoTop()
+If ( MsSeek(XFilial("ACY")+c_Grupo) )
+
+    l_Ret := .T.
+EndIf
+
+Return ( l_Ret )
+/*/{Protheus.doc} VldSX5
+Valido as informações no SX5.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 12/02/2025
+@param c_Chave, character, A chave de busca.
+@param c_Conteudo, character, O conteúdo no SX5.
+@return logical, Se a chave é válida [.T.].
+/*/
+Static Function VldSX5(c_Chave, c_Conteudo)
+
+Local l_Ret     := .F.
+
+DbSelectArea("SX5")
+DbSetOrder(1) //X5_FILIAL, X5_TABELA, X5_CHAVE, R_E_C_N_O_, D_E_L_E_T_
+DbGoTop()
+If ( MsSeek(XFilial("SX5")+PadR(c_Chave, TamSX3("X5_TABELA")[1])+PadR(c_Conteudo, TamSX3("X5_CHAVE")[1])) )
+
+    l_Ret := .T.
+EndIf
+
+Return ( l_Ret )
+/*/{Protheus.doc} VldCpo
+Faço a comparação entre os valores.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 19/02/2025
+@param c_VlrAnt, character, Valor anterior.
+@param c_NovoVlr, character, O novo valor.
+@return logical, Se o campo e o valor é válido.
+/*/
+Static Function VldCpo(c_VlrAnt, c_NovoVlr)
+
+Local l_Ret     := .F. 
+
+If ( !Empty(c_NovoVlr) .AND. c_VlrAnt != c_NovoVlr )
+
+    l_Ret := .T.
+EndIf
+
+Return ( l_Ret )
+/*/{Protheus.doc} ExpArq
+Exporta o arquivo com as informações das entidades de acordo com os parâmetros.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 12/02/2025
+@param c_Modelo, character, O modelo do relatório.
+/*/
+Static Function ExpArq(c_Modelo)
+
+Local a_Cab     := {}
+Local a_Linhas  := {"", CRLF, CRLF}
+Local c_Perg    := ""
+Local c_Query   := ""
+Local c_IdentArq:= ""
+Local c_AliasQRY:= ""
+Local c_Caminho := cGetFile(""/*[cMascara]*/, "Selecione um Local para salvar o arquivo."/*[cTitulo]*/,/*[nMascpadrao]*/,/*[cDirinicial]*/, /*[lAbrir]*/, GETF_RETDIRECTORY+GETF_LOCALHARD+GETF_LOCALFLOPPY/*[nOpcoes]*/,/*[lArvore]*/,/*[lKeepCase]*/)
+Local n_i       := 0
+Local n_Handle  := 0
+Local l_Perg    := .F.
+
+If ( !Empty(c_Caminho) )
+
+    If ( Right(c_Caminho, 1) <> "\" )
+        c_Caminho += "\"
+    EndIf
+
+    If ( c_Modelo == "1" )
+
+        c_Perg := ValPerg(c_Modelo)
+
+        If ( Pergunte(c_Perg, .T., "Parâmetros para a alteração da tabela de preço") )
+
+            l_Perg := .T.
+
+            c_Query := "SELECT"+CRLF
+            c_Query += "        DA1.DA1_FILIAL"+CRLF
+            c_Query += "     ,  DA1.DA1_CODTAB"+CRLF
+            c_Query += "     ,  DA1.DA1_CODPRO"+CRLF
+            c_Query += "     ,  DA1.DA1_PRCVEN"+CRLF
+            c_Query += "FROM "+RetSqlName("DA1")+" DA1 (NOLOCK)"+CRLF
+            c_Query += "WHERE "
+
+            If ( !Empty(MV_PAR01) )
+                c_Query += " DA1_FILIAL >= '"+MV_PAR01+"' AND"
+            EndIf
+
+            If ( !Empty(MV_PAR02) )
+                c_Query += " DA1_FILIAL <= '"+MV_PAR02+"' AND"
+            EndIf
+
+            If ( !Empty(MV_PAR03) )
+                c_Query += " DA1_CODTAB >= '"+MV_PAR03+"' AND"
+            EndIf
+
+            If ( !Empty(MV_PAR04) )
+                c_Query += " DA1_CODTAB <= '"+MV_PAR04+"' AND"
+            EndIf
+
+            If ( !Empty(MV_PAR05) )
+                c_Query += " DA1_CODPRO >= '"+MV_PAR05+"' AND"
+            EndIf
+
+            If ( !Empty(MV_PAR06) )
+                c_Query += " DA1_CODPRO <= '"+MV_PAR06+"' AND"+CRLF
+            EndIf
+
+            c_Query += " D_E_L_E_T_ = ''"+CRLF
+        EndIf
+
+    ElseIf ( c_Modelo == "2" )
+
+        c_Perg := ValPerg(c_Modelo)
+
+        If ( Pergunte(c_Perg, .T., "Parâmetros para a alteração do preço fixo no cliente") )
+
+            l_Perg := .T.
+
+            c_Query := "SELECT"+CRLF
+            c_Query += "	    A7_FILIAL"+CRLF
+            c_Query += "	 ,  A7_CLIENTE"+CRLF
+            c_Query += "	 ,  A7_LOJA"+CRLF
+            c_Query += "	 ,  A7_PRODUTO"+CRLF
+            c_Query += "	 ,  A7_XPRCFIX"+CRLF
+            c_Query += "	 ,  A7_XPERDS"+CRLF
+            c_Query += "FROM "+RetSqlName("SA7")+" SA7 (NOLOCK)"+CRLF
+            c_Query += "WHERE "
+
+            If ( !Empty(MV_PAR01) )
+                c_Query += "A7_FILIAL >= '"+MV_PAR01+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR02) )
+    	        c_Query += "A7_FILIAL <= '"+MV_PAR02+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR03) )
+	            c_Query += "A7_CLIENTE>= '"+MV_PAR03+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR04) )
+    	        c_Query += "A7_CLIENTE<= '"+MV_PAR04+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR05) )
+    	        c_Query += "A7_LOJA   >= '"+MV_PAR05+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR06) )
+    	        c_Query += "A7_LOJA   <= '"+MV_PAR06+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR07) )
+    	        c_Query += "A7_PRODUTO>= '"+MV_PAR07+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR08) )
+    	        c_Query += "A7_PRODUTO<= '"+MV_PAR08+"' AND "+CRLF
+            EndIf
+	        c_Query += "D_E_L_E_T_ = ''"+CRLF
+
+        EndIf
+
+    ElseIf ( c_Modelo == "3" )
+
+        c_Perg := ValPerg(c_Modelo)
+
+        If ( Pergunte(c_Perg, .T., "Parâmetros para as alterações no cliente") )
+
+            l_Perg := .T.
+
+            c_Query := "SELECT"+CRLF
+            c_Query += "		A1_COD"+CRLF
+            c_Query += "	 ,  A1_LOJA"+CRLF
+            c_Query += "	 ,  A1_VEND"+CRLF
+            c_Query += "	 ,  A1_NREDUZ"+CRLF
+            c_Query += "	 ,  A1_TABELA"+CRLF
+            c_Query += "	 ,  A1_GRPVEN"+CRLF
+            c_Query += "	 ,  A1_SATIV1"+CRLF
+            c_Query += "FROM "+RetSqlName("SA1")+" SA1 (NOLOCK)"+CRLF
+            c_Query += "WHERE "
+
+            If ( !Empty(MV_PAR01) )
+
+                c_Query += "A1_COD    >= '"+MV_PAR01+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR02) )
+
+                c_Query += "A1_COD    <= '"+MV_PAR02+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR03) )
+
+	            c_Query += "A1_LOJA   >= '"+MV_PAR03+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR04) )
+
+	            c_Query += "A1_LOJA   <= '"+MV_PAR04+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR05) )
+
+	            c_Query += "A1_VEND   >= '"+MV_PAR05+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR06) )
+
+	            c_Query += "A1_VEND   <= '"+MV_PAR06+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR07) )
+
+	            c_Query += "A1_TABELA >= '"+MV_PAR07+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR08) )
+
+	            c_Query += "A1_TABELA <= '"+MV_PAR08+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR09) )
+
+	            c_Query += "A1_GRPVEN >= '"+MV_PAR09+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR10) )
+
+	            c_Query += "A1_GRPVEN <= '"+MV_PAR10+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR11) )
+
+	            c_Query += "A1_SATIV1 >= '"+MV_PAR11+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR12) )
+
+	            c_Query += "A1_SATIV1 <= '"+MV_PAR12+"' AND "+CRLF
+            EndIf
+
+	        c_Query += "D_E_L_E_T_ = '' "+CRLF
+        EndIf
+
+    ElseIf ( c_Modelo == "4" )
+
+        c_Perg := ValPerg(c_Modelo)
+
+        If ( Pergunte(c_Perg, .T., "Parâmetros para a alteração da matriz de frete") )
+
+            l_Perg := .T.
+
+            c_Query := "SELECT"+CRLF
+            c_Query += "	    ZZB_FILIAL"+CRLF
+            c_Query += "	 ,  ZZB_CANAL"+CRLF
+            c_Query += "	 ,  ZZB_UF"+CRLF
+            c_Query += "	 ,  ZZB_TARFRT"+CRLF
+            c_Query += "	 ,  ZZB_VLRKG"+CRLF
+            c_Query += "FROM "+RetSqlName("ZZB")+" ZZB (NOLOCK)"+CRLF
+            c_Query += "WHERE "
+
+            If ( !Empty(MV_PAR01) )
+        
+                c_Query += "ZZB_FILIAL >= '"+MV_PAR01+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR02) )
+        
+                c_Query += "ZZB_FILIAL <= '"+MV_PAR02+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR03) )
+        
+                c_Query += "ZZB_CANAL  >= '"+MV_PAR03+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR04) )
+        
+                c_Query += "ZZB_CANAL  <= '"+MV_PAR04+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR05) )
+        
+
+                c_Query += "ZZB_UF     >= '"+MV_PAR05+"' AND "+CRLF
+            EndIf
+            If ( !Empty(MV_PAR06) )
+        
+                c_Query += "ZZB_UF     <= '"+MV_PAR06+"' AND "+CRLF
+            EndIf
+            c_Query += "D_E_L_E_T_ = ''"+CRLF
+        EndIf
+    EndIf
+
+    If ( l_Perg )
+
+        a_Cab := RetCab(c_Modelo,/*[c_NomArq]*/, @c_IdentArq)
+
+        a_Linhas[1] += "Modelo;"
+        a_Linhas[1] += c_Modelo+";"
+        a_Linhas[1] += c_IdentArq+";"
+
+        For n_i := 1 To Len(a_Cab)
+
+            a_Linhas[2] += a_Cab[n_i][1]+";"
+            a_Linhas[3] += a_Cab[n_i][2]+";"
+        Next n_i
+
+        c_AliasQRY := MpSysOpenQuery(c_Query,/*c_AliasQRY*/,,"TOPCONN")
+
+        If ( (c_AliasQRY)->(EoF()) )
+
+            FWAlertInfo("Nenhum dado foi gerado!", "Informativo - ExpArq")
+        Else
+            If ( c_Modelo == "1" )
+
+                While ( (c_AliasQRY)->(!EoF()) )
+                    AAdd(a_Linhas, "")
+
+                    ATail(a_Linhas) += CRLF+(c_AliasQRY)->(";"+DA1_FILIAL+";"+DA1_CODTAB+";"+DA1_CODPRO+";"+Transform(DA1_PRCVEN, PesqPict("DA1","DA1_PRCVEN")))
+                    (c_AliasQRY)->(DbSkip())
+                EndDo
+            ElseIf ( c_Modelo == "2" )
+
+                While ( (c_AliasQRY)->(!EoF()) )
+                    AAdd(a_Linhas, "")
+
+                    ATail(a_Linhas) += CRLF+(c_AliasQRY)->(";"+A7_FILIAL+";"+A7_CLIENTE+";"+A7_LOJA+";"+A7_PRODUTO+";"+Transform(A7_XPRCFIX, PesqPict("SA7","A7_XPRCFIX"))+";"+A7_XPERDS)
+                    (c_AliasQRY)->(DbSkip())
+                EndDo
+            ElseIf ( c_Modelo == "3" )
+
+                While ( (c_AliasQRY)->(!EoF()) )
+                    AAdd(a_Linhas, "")
+
+                    ATail(a_Linhas) += CRLF+(c_AliasQRY)->(A1_COD+";"+A1_LOJA+";"+A1_VEND+";"+A1_NREDUZ+";"+A1_TABELA+";"+A1_GRPVEN+";"+A1_SATIV1)
+                    (c_AliasQRY)->(DbSkip())
+                EndDo
+            ElseIf ( c_Modelo == "4" )
+
+                While ( (c_AliasQRY)->(!EoF()) )
+                    AAdd(a_Linhas, "")
+
+                    ATail(a_Linhas) += CRLF+(c_AliasQRY)->(";"+ZZB_FILIAL+";"+ZZB_CANAL+";"+ZZB_UF+";"+ZZB_TARFRT+";"+Transform(ZZB_VLRKG, PesqPict("ZZB","ZZB_VLRKG")))
+                    (c_AliasQRY)->(DbSkip())
+                EndDo
+            EndIf
+
+            n_Handle := FCreate( c_Caminho+c_IdentArq+".csv" /*<cArquivo>*/, /*[nAtributo]*/, /*[xParam3]*/, /*[lChangeCase]*/)
+
+            If ( n_Handle = -1 )
+                MsgAlert(Str(Ferror()))
+            Else
+                For n_i := 1 To Len(a_Linhas)
+
+                    FWrite(n_Handle/*<nHandle>*/, a_Linhas[n_i]/*<cBuffer>*//*,[nQtdBytes]*/)
+                Next n_i
+
+                FClose(n_Handle)
+
+                FWAlertSuccess("Arquivo criado com sucesso!", "Sucesso - FATPGR04")
+                ShellExecute("OPEN", c_IdentArq+".csv", "", c_Caminho, 1)
+            EndIf
+        EndIf
+
+        (c_AliasQRY)->(DbCloseArea())
+    EndIf
+EndIf
+
+Return Nil
+/*/{Protheus.doc} ExpTabelaPreco
+Altera as tabelas de preço.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 12/03/2026
+@param a_CodTabelas, array, Matriz com o código da tabela e a chave de pesquisa.
+/*/
+Static Function ExpTabelaPreco(a_CodTabelas)
+
+Local n_i := 0
+
+DbSelectArea("DA0")
+DbSetOrder(1) //DA0_FILIAL, DA0_CODTAB, R_E_C_N_O_, D_E_L_E_T_
+
+For n_i := 1 To Len(a_CodTabelas)
+
+    DbGoTop()
+    If ( MsSeek(a_CodTabelas[n_i][2]) )
+
+        U_FCSExpTAB(DA0->DA0_CODTAB, .T.)
+    EndIf
+Next n_i
+
+Return Nil
+/*/{Protheus.doc} ValPerg
+Valido as perguntas de acordo com o modelo.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 12/02/2025
+@param c_Modelo, character, O modelo.
+@return c_Perg, O grupo de perguntas.
+/*/
+Static Function ValPerg(c_Modelo)
+
+Local a_Regs    := {}
+Local c_Perg    := "FATPGR04"+c_Modelo
+
+If ( c_Modelo == "1" )
+
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Filial de:  " /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("DA1_FILIAL")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Filial até:  "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("DA1_FILIAL")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Tabela de:  " /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("DA1_CODTAB")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Tabela ate: " /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("DA1_CODTAB")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Produto de: " /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("DA1_CODPRO")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Produto até: "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("DA1_CODPRO")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+
+ElseIf ( c_Modelo == "2" )
+
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Filial de:  "    /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A7_FILIAL")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Filial até:  "   /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A7_FILIAL")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Cód. Cli. De:  " /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A7_CLIENTE")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Cód. Cli. Até: " /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A7_CLIENTE")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Loja Cli. De: "  /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A7_LOJA")[1]   /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Loja Cli. Até: " /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A7_LOJA")[1]   /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Cod. Prod. De: " /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A7_PRODUTO")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Cod. Prod. Até: "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A7_PRODUTO")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+
+ElseIf ( c_Modelo == "3" )
+
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Cód. Cli. De:  "      /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_COD")[1]   /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Cód. Cli. Até: "      /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_COD")[1]   /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Loja Cli. De: "       /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_LOJA")[1]  /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Loja Cli. Até: "      /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_LOJA")[1]  /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Cód. Vend. De: "      /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_VEND")[1]  /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Cód. Vend. Até: "     /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_VEND")[1]  /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Tabela de:  "         /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_TABELA")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Tabela ate: "         /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_TABELA")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Grupo de vendas de:  "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_GRPVEN")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Grupo de vendas até: "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_GRPVEN")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Segmento de:  "       /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_SATIV1")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Segmento até: "       /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_SATIV1")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+
+ElseIf ( c_Modelo == "4" )
+
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Filial de:  "         /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("ZZB_FILIAL")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Filial até:  "        /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("ZZB_FILIAL")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Grupo de vendas de:  "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("ZZB_CANAL")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Grupo de vendas até: "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("ZZB_CANAL")[1] /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"UF. De:  "            /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("ZZB_UF")[1]    /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"UF. Até: "            /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("ZZB_UF")[1]    /*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Tarifa de frete de:  "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("ZZB_TARFRT")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Tarifa de frete até: "/*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("ZZB_TARFRT")[1]/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/,""/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+
+ElseIf ( c_Modelo == "Z" )
+
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Modelo:  "         /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, 1/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/, "(Empty(MV_PAR01) .OR. MV_PAR01 $ '1/2/3/4')"/*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Data de:  "        /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "D"/*X1_TIPO*/, 8/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""                                           /*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+    AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/,"Data até:  "       /*X1_PERGUNT*/,""/*X1_PERSPA*/,""/*X1_PERENG*/,""/*X1_VARIAVL*/, "D"/*X1_TIPO*/, 8/*X1_TAMANHO*/,0/*X1_DECIMAL*/,0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""                                           /*X1_VALID*/,"MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/,""/*X1_VAR01*/,""/*X1_DEF01*/,""/*X1_DEFSPA1*/,""/*X1_DEFENG1*/,""/*X1_CNT01*/,""/*X1_VAR02*/,""/*X1_DEF02*/,""/*X1_DEFSPA2*/,""/*X1_DEFENG2*/,""/*X1_CNT02*/,""/*X1_VAR03*/,""/*X1_DEF03*/,""/*X1_DEFSPA3*/,""/*X1_DEFENG3*/,""/*X1_CNT03*/,""/*X1_VAR04*/,""/*X1_DEF04*/,""/*X1_DEFSPA4*/,""/*X1_DEFENG4*/,""/*X1_CNT04*/,""/*X1_VAR05*/,""/*X1_DEF05*/,""/*X1_DEFSPA5*/,""/*X1_DEFENG5*/,""/*X1_CNT05*/,""/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+EndIf
+
+U_PutX1FOC(c_Perg, a_Regs)
+
+Return ( c_Perg )
+/*/{Protheus.doc} RelLog
+Faço o relatório dos logs de alteração.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 19/02/2025
+/*/
+Static Function RelLog()
+
+Local c_Perg    := ""
+Local l_OkPerg  := .T.
+Local c_Logo    := "\" + ALLTRIM(CURDIR()) + "\LogoTReport.bmp"
+
+Private o_Report  := Nil
+Private o_SecCab  := Nil
+
+Private c_AliasRel:= GetNextAlias()
+Private o_FontCab := TFont():New("Arial"/*[cName]*/,/*[uPar2]*/,12/*[nHeight]*/,/*[uPar4]*/,.T./*[lBold]*/,/*[uPar6]*/,/*[uPar7]*/,/*[uPar8]*/,/*[uPar9]*/,.F./*[lUnderline]*/,.F./*[lItalic]*/)
+Private o_FontIte := TFont():New("Arial"/*[cName]*/,/*[uPar2]*/,10/*[nHeight]*/,/*[uPar4]*/,.F./*[lBold]*/,/*[uPar6]*/,/*[uPar7]*/,/*[uPar8]*/,/*[uPar9]*/,.F./*[lUnderline]*/,.F./*[lItalic]*/)
+
+c_Perg := ValPerg("Z")
+
+While ( .T. )
+
+    If ( Pergunte(c_Perg, .T.) )
+
+        If ( Empty(MV_PAR01) )
+
+            l_OkPerg := .T.
+            Exit
+
+        EndIf
+    Else
+        l_OkPerg := .F.
+        Exit
+    EndIf
+EndDo
+
+If ( l_OkPerg )
+
+    //Definições/preparação para impressão do relatório
+    o_Report := TReport():New("FATPGR04"/*<cReport>*/, "Log de alteração."/*<cTitle>*/, c_Perg/*<uParam>*/,{|o_Report| PrintReport(o_Report)}/*<bAction>*/,"As alterações que foram feitas."/*<cDescription>*/,/*<lLandscape>*/,/*<uTotalText>*/,/*<lTotalInLine>*/,/*<cPageTText>*/,/*<lPageTInLine>*/,/*<lTPageBreak>*/,/*<nColSpace>*/)
+
+    o_Report:SetLandscape(.T.)
+    o_Report:SetLogo(c_Logo)
+
+    //Criação da seção utilizada pelo relatório
+    o_SecCab:= TRSection():New(o_Report, "Log arquivos", {c_AliasRel})
+    o_SecCab:SetHeaderPage()
+    o_SecCab:SetTotalInLine(.F.)
+
+    TRCell():New(o_SecCab/*<oParent>*/, "TABELA"   /*<cName>*/, c_AliasRel/*<cAlias>*/, "Desc. Tabela"/*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+    TRCell():New(o_SecCab/*<oParent>*/, "CAMPO"    /*<cName>*/, c_AliasRel/*<cAlias>*/, "Nome campo"  /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+    TRCell():New(o_SecCab/*<oParent>*/, "DESCCPO"  /*<cName>*/, c_AliasRel/*<cAlias>*/, "Desc. campo" /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+    TRCell():New(o_SecCab/*<oParent>*/, "CONT_DE"  /*<cName>*/, c_AliasRel/*<cAlias>*/, "De"          /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+    TRCell():New(o_SecCab/*<oParent>*/, "CONT_PARA"/*<cName>*/, c_AliasRel/*<cAlias>*/, "Para"        /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+    TRCell():New(o_SecCab/*<oParent>*/, "QUEM"     /*<cName>*/, c_AliasRel/*<cAlias>*/, "Responsável" /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+    TRCell():New(o_SecCab/*<oParent>*/, "DATA"     /*<cName>*/, c_AliasRel/*<cAlias>*/, "Data"        /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+    TRCell():New(o_SecCab/*<oParent>*/, "HORA"     /*<cName>*/, c_AliasRel/*<cAlias>*/, "Hora"        /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+
+	o_Report:PrintDialog()
+
+	FreeObj(o_Report)
+    FreeObj(o_SecCab)
+EndIf
+
+Return Nil
+/*/{Protheus.doc} PrintReport
+Executo a query do relatório.
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 18/02/2025
+@param o_Report, object, O objeto de relatório.
+/*/
+Static Function PrintReport(o_Report)
+
+Local c_Where   := "" 
+
+c_Where += "%"
+If ( MV_PAR01 == "1" )
+    c_Where += "AND TABELA = 'DA1'"
+ElseIf ( MV_PAR01 == "2" )
+    c_Where += "AND TABELA = 'SA7'"
+ElseIf ( MV_PAR01 == "3" )
+    c_Where += "AND TABELA = 'SA1'"
+ElseIf ( MV_PAR01 == "4" )
+    c_Where += "AND TABELA = 'ZZB'"
+EndIf
+If ( !Empty(MV_PAR02) )
+    c_Where += "AND   CAST(QUANDO AS DATE) >= '"+DToS(MV_PAR02)+"'"
+EndIf
+If ( !Empty(MV_PAR03) )
+    c_Where += "AND   CAST(QUANDO AS DATE) <= '"+DToS(MV_PAR03)+"'"
+EndIf
+c_Where += "%"
+
+MakeSqlExpr(o_Report:uParam)
+
+//Altera as fontes
+o_Report:oFontHeader := o_FontCab
+o_Report:oFontBody 	 := o_FontIte
+
+o_Report:Section(1):BeginQuery()	
+
+BeginSql Alias c_AliasRel
+
+SELECT 
+		TABELA    = (SELECT X2_NOME FROM SX2010 SX2 (NOLOCK) WHERE X2_CHAVE = TABELA AND D_E_L_E_T_ = '')
+	 ,  CAMPO
+	 ,  DESCCPO   = CASE WHEN CAMPO = 'D_E_L_E_T_' THEN 'Exclusão'
+						ELSE (SELECT X3_TITULO FROM SX3010 SX3 (NOLOCK) WHERE X3_CAMPO = CAMPO AND D_E_L_E_T_ = '')
+				    END
+	 ,  CONT_DE   = CASE 
+						 WHEN CAMPO = 'D_E_L_E_T_' THEN ' '
+						 ELSE DE
+				    END
+	 ,  CONT_PARA = CASE 
+					     WHEN CAMPO = 'D_E_L_E_T_' THEN ' '
+						 ELSE PARA
+				    END
+	 ,  DATA      = CONVERT(varchar, QUANDO, 103)
+     ,  HORA      = LEFT(CONVERT(varchar, QUANDO, 108),5)
+	 ,  QUEM
+
+FROM TBL_LOG_ALTERACAO_PROTHEUS (NOLOCK)
+WHERE ORIGEM = 'FATPGR04'
+%Exp:c_Where%
+
+EndSql
+
+//Para pegar a query basta utilar o comando GetLastQuery()[2]
+
+o_Report:Section(1):EndQuery(/*Array com os parametros do tipo Range*/)
+
+o_SecCab:Print()
+
+Return Nil

@@ -1,0 +1,654 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TBICONN.CH"
+#INCLUDE "FWMVCDEF.CH"
+
+// Defines de alinhamento (usados pelo GeraArquivo)
+#DEFINE N_HORIZ_DEFAULT     0
+#DEFINE N_HORIZ_LEFT        1
+#DEFINE N_HORIZ_CENTER      2
+#DEFINE N_HORIZ_RIGHT       3
+#DEFINE N_HORIZ_FILL        4
+#DEFINE N_HORIZ_JUSTIFY     5
+#DEFINE N_HORIZ_DISTRIBUTED 6
+#DEFINE N_VERT_DEFAULT      0
+#DEFINE N_VERT_TOP          1
+#DEFINE N_VERT_BOTTOM       2
+#DEFINE N_VERT_CENTER       3
+#DEFINE N_VERT_JUSTIFY      4
+#DEFINE N_VERT_DISTRIBUTED  5
+/*/{Protheus.doc} FINPGR02 
+Tela para importação de alteração de clientes (SA1).
+@type function
+@version 1.0
+@author Henrique Freitas Alves
+@since 10/11/2025
+/*/
+User Function FINPGR02() 
+
+Local o_Dlg     := Nil
+Local o_FontTit := Nil
+Local o_FontBut := Nil
+Local o_PainTop := Nil
+Local o_PainMid := Nil
+Local o_PainBot := Nil
+Local o_ButtonEx:= Nil
+Local o_ButtonIm:= Nil
+Local c_Versao  := "1.0"
+Local c_CodUsr  := RetCodUsr()
+Local c_Depto   := ""
+Local c_Usuarios:= SuperGetMV("GR_FINP023", .F., "", Nil)
+Local n_RightDlg:= 450
+
+//Pego o departamento do usuario.
+If PswSeek(c_CodUsr, .T. )   
+    c_Depto := PswRet()[1][12]
+EndIf
+
+If ( c_CodUsr $ c_Usuarios .OR. FWIsAdmin() .OR. Upper(Alltrim(c_Depto)) == "FINANCEIRO" )
+
+    o_Dlg := TDialog():New(000/*[nTop]*/, 000/*[nLeft]*/, 180/*[nBottom]*/, n_RightDlg/*[nRight]*/, "Alteração de Clientes V"+c_Versao/*[cCaption]*/, /*[uParam6]*/, /*[uParam7]*/, /*[uParam8]*/, /*[uParam9]*/, /*[nClrText]*/, /*[nClrBack]*/, /*[uParam12]*/, /*[oWnd]*/, .T./*[lPixel]*/, /*[uParam15]*/, /*[uParam16]*/, /*[uParam17]*/, /*[nWidth]*/, /*[nHeight]*/, /*[lTransparent]*/)
+
+    o_PainTop := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/, /*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/, /*[nClrText]*/, /*[nClrBack]*/, 000/*[nWidth]*/, 035/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+    o_PainTop:Align := CONTROL_ALIGN_TOP
+
+    o_PainMid := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/, /*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/, /*[nClrText]*/, /*[nClrBack]*/, 000/*[nWidth]*/, 000/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+    o_PainMid:Align := CONTROL_ALIGN_ALLCLIENT
+
+    o_PainBot := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/, /*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/, /*[nClrText]*/, /*[nClrBack]*/, 000/*[nWidth]*/, 032/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+    o_PainBot:Align := CONTROL_ALIGN_BOTTOM
+
+    o_FontTit := TFont():New("Calibri"/*[cName]*/, /*[uPar2]*/, 030/*[nHeight]*/, /*[uPar4]*/, .T./*[lBold]*/, /*[uPar6]*/, /*[uPar7]*/, /*[uPar8]*/, /*[uPar9]*/, .F./*[lUnderline]*/, .F./*[lItalic]*/)
+
+    o_FontBut := TFont():New("Calibri"/*[cName]*/, /*[uPar2]*/, 024/*[nHeight]*/, /*[uPar4]*/, .T./*[lBold]*/, /*[uPar6]*/, /*[uPar7]*/, /*[uPar8]*/, /*[uPar9]*/, .F./*[lUnderline]*/, .F./*[lItalic]*/)
+
+    TSay():New(005/*[nRow]*/, 005/*[nCol]*/, {|| OemToAnsi("Alteração de Clientes (SA1)"+CRLF+"Exportar modelo e importar alterações.")}/*[bText]*/, o_Dlg/*[oWnd]*/, /*[cPicture]*/, o_FontTit/*[oFont]*/, /*[uParam7]*/, /*[uParam8]*/, /*[uParam9]*/, .T./*[lPixels]*/, /*[nClrText]*/, /*[nClrBack]*/, 300/*[nWidth]*/, 030/*[nHeight]*/, /*[uParam15]*/, /*[uParam16]*/, /*[uParam17]*/, /*[uParam18]*/, /*[uParam19]*/, /*[lHTML]*/, 0/*[nTxtAlgHor]*/, /*[nTxtAlgVer]*/)
+
+    o_ButtonEx := TButton():New(005/*[nRow]*/, 005/*[nCol]*/, OemToAnsi("Exportar Modelo")/*[cCaption]*/, o_PainMid/*[oWnd]*/, {|| GeraArq()}/*[bAction]*/, 080/*[nWidth]*/, 015/*[nHeight]*/, /*[uParam8]*/, o_FontBut/*[oFont]*/, /*[uParam10]*/, .T./*[lPixel]*/, /*[uParam12]*/, /*[uParam13]*/, /*[uParam14]*/, /*[bWhen]*/, /*[uParam16]*/, /*[uParam17]*/)
+
+    o_ButtonIm := TButton():New(005/*[nRow]*/, 090/*[nCol]*/, OemToAnsi("Importar Arquivo")/*[cCaption]*/, o_PainMid/*[oWnd]*/, {|| ImpArq()}/*[bAction]*/, 080/*[nWidth]*/, 015/*[nHeight]*/, /*[uParam8]*/, o_FontBut/*[oFont]*/, /*[uParam10]*/, .T./*[lPixel]*/, /*[uParam12]*/, /*[uParam13]*/, /*[uParam14]*/, /*[bWhen]*/, /*[uParam16]*/, /*[uParam17]*/)
+
+    TButton():New(010/*[nRow]*/, (n_RightDlg / 2) - 50/*[nCol]*/, "Sair"/*[cCaption]*/, o_PainBot/*[oWnd]*/, {|| o_Dlg:End()}/*[bAction]*/, 045/*[nWidth]*/, 015/*[nHeight]*/, /*[uParam8]*/, o_FontBut/*[oFont]*/, /*[uParam10]*/, .T./*[lPixel]*/, /*[uParam12]*/, /*[uParam13]*/, /*[uParam14]*/, /*[bWhen]*/, /*[uParam16]*/, /*[uParam17]*/)
+
+    o_Dlg:Activate( /*[uParam1]*/, /*[uParam2]*/, /*[uParam3]*/, .T./*[lCentered]*/, /*[bValid]*/, /*[uParam6]*/, /*[bInit]*/, /*[uParam8]*/, /*[uParam9]*/)
+Else
+    FWAlertError("Você não tem permissão para acessar essa funcionalidade! [GR_FINP023]"/*[cMessage]*/, "Acesso Negado - FINPGR02"/*[cTitle]*/)
+EndIf
+
+Return Nil
+
+/*/{Protheus.doc} GeraArq
+Faço a criação do modelo de arquivo para a importação.
+Ele busca os dados do SA1 conforme filtros da pergunta.
+@type function
+@version 1.8
+@author Henrique Freitas Alves
+@since 10/11/2025
+/*/
+Static Function GeraArq()
+
+Local a_Cab     := {}
+Local a_Linhas  := {"", CRLF, CRLF, CRLF}
+Local c_Caminho := ""
+Local c_NomArq  := ""
+Local n_Handle  := 0
+Local n_i       := 0
+
+Local a_Fields    := {}
+Local c_Alias     := GetNextAlias() 
+Local c_LineData  := ""
+Local x_Value     := Nil
+Local c_Field     := ""
+Local c_Perg      := "FINPGR02"
+Local c_SelectFields := ""
+
+// Garante que as perguntas existam no SX1
+ValPerg(c_Perg)
+
+If ( Pergunte(c_Perg, .T., "Selecione os parâmetros para buscar os clientes para alteração.") )
+
+    // Pergunta o local para salvar o arquivo
+    c_Caminho := cGetFile(""/*[cMascara]*/, "Selecione um Local para salvar o arquivo."/*[cTitulo]*/, /*[nMascpadrao]*/, /*[cDirinicial]*/, /*[lAbrir]*/, GETF_RETDIRECTORY+GETF_LOCALHARD+GETF_LOCALFLOPPY/*[nOpcoes]*/, /*[lArvore]*/, /*[lKeepCase]*/)
+
+    If ( !Empty(c_Caminho) )
+
+        If ( Right(c_Caminho, 1) <> "\" )
+            c_Caminho += "\"
+        EndIf
+
+        // 1. Gera o cabeçalho e obtém o nome do arquivo
+        a_Cab := RetCab(@c_NomArq)
+
+        // 2. Adiciona as linhas de cabeçalho ao array principal
+        a_Linhas[1] += a_Cab[1]+";"
+        a_Linhas[2] += a_Cab[2]+";"
+        a_Linhas[3] += a_Cab[3]+";"
+        a_Linhas[4] += a_Cab[4]+";"
+
+        // 3. Pega a lista de campos (da linha 2 do cabeçalho) para o SQL
+        a_Fields := StrTokArr2(a_Cab[2]/*<cValue>*/, ";"/*<cToken>*/, .F./*[lEmptyStr]*/)
+
+        // 4. Monta a string APENAS do SELECT
+        c_SelectFields := "%"
+        For n_i := 1 To Len(a_Fields)
+            c_SelectFields += " SA1." + AllTrim(a_Fields[n_i])
+            If n_i < Len(a_Fields)
+                c_SelectFields += " , "
+            EndIf
+        Next n_i
+        c_SelectFields += "%"
+
+        // 5. Executa a Query
+        BeginSQL Alias c_Alias
+            SELECT %Exp:c_SelectFields%
+              FROM %Table:SA1% SA1 (NOLOCK)
+             WHERE SA1.A1_FILIAL  = %xFilial:SA1%
+               AND SA1.A1_COD     BETWEEN %Exp:MV_PAR01% AND %Exp:MV_PAR02%
+               AND SA1.A1_LOJA    BETWEEN %Exp:MV_PAR03% AND %Exp:MV_PAR04%
+               AND SA1.A1_COND    BETWEEN %Exp:MV_PAR05% AND %Exp:MV_PAR06%
+               AND SA1.A1_SATIV1  BETWEEN %Exp:MV_PAR07% AND %Exp:MV_PAR08%
+               AND SA1.D_E_L_E_T_ = ' '
+             ORDER BY SA1.A1_COD, SA1.A1_LOJA
+        EndSQL
+
+        If (c_Alias)->(!EoF())
+            // 6. Processa os resultados e adiciona em a_Linhas
+            While (c_Alias)->(!EoF())
+                c_LineData := CRLF // Reseta a linha de dados
+                
+                For n_i := 1 To Len(a_Fields)
+                    c_Field := AllTrim(a_Fields[n_i])
+                    x_Value := (c_Alias)->(FieldGet(n_i)) 
+                    
+                    c_LineData += FormataCpoCSV(x_Value) + ";"
+                Next n_i
+                
+                AAdd(a_Linhas, c_LineData) // Adiciona a linha de dados
+
+                (c_Alias)->(DbSkip())
+            EndDo
+        EndIf
+        
+        (c_Alias)->(DbCloseArea())
+
+        // 7. Grava o arquivo (agora com cabeçalho + dados)
+        n_Handle := FCreate(c_Caminho+c_NomArq /*<cArquivo>*/, /*[nAtributo]*/, /*[xParam3]*/, /*[lChangeCase]*/)
+
+        If ( n_Handle == -1 )
+
+            FWAlertError(Str(Ferror()), "Erro ao criar arquivo - FINPGR02")
+        Else
+            For n_i := 1 To Len(a_Linhas)
+                FWrite(n_Handle/*<nHandle>*/, a_Linhas[n_i]/*<cBuffer>*//*,[nQtdBytes]*/)
+            Next n_i
+
+            FClose(n_Handle)
+
+            FWAlertSuccess("Modelo de alteração de clientes criado com sucesso!", "Sucesso - FINPGR02") 
+            ShellExecute("OPEN", c_NomArq, "", c_Caminho, 1)
+        EndIf
+    EndIf
+EndIf
+
+Return Nil
+/*/{Protheus.doc} RetCab
+Retorna o cabeçalho padrão dos arquivos de alteração SA1.
+@type function
+@author Henrique Freitas Alves
+@since 10/11/2025
+@param c_NomArq, character, (Por Referência) Retorna o nome do arquivo a ser gerado.
+/*/
+Static Function RetCab(c_NomArq)
+
+Local a_Cab         := {"","","", ""}
+Local a_CposSA1     := FWSX3Util():GetAllFields("SA2", .F./*lVirtual*/)
+Local c_IdentArq    := ""
+Local c_CposCusSA1  := SuperGetMV("GR_FINP021", .F., "A1_NOME/A1_END/A1_TEL/A1_BAIRRO/A1_MUN/A1_EST/A1_CEP/A1_EMAIL/A1_RISCO/A1_MSBLQL/") // Campos permitidos
+Local c_CposNaoSA1  := SuperGetMV("GR_FINP022", .F., "/A1_FILIAL/A1_COD/A1_LOJA/A1_CGC/A1_PESSOA/") // Campos de chave/controle que não devem ser alterados via planilha
+Local n_i           := 0
+
+a_Cab[1] += "Identificação do Cliente (Obrigatório);"
+a_Cab[2] += "A1_COD;"
+a_Cab[3] += AllTrim(FWSX3Util():GetDescription("A1_COD"))+";"
+a_Cab[4] += "Opções em caso de combos;"
+
+a_Cab[1] += "Preencha o código e a loja;" 
+a_Cab[2] += "A1_LOJA;"
+a_Cab[3] += AllTrim(FWSX3Util():GetDescription("A1_LOJA"))+";"
+a_Cab[4] += "Não apague essa linha;"
+
+For n_i := 1 To Len(a_CposSA1)
+
+    If ( (a_CposSA1[n_i]+"/" $ c_CposCusSA1) .AND. !( "/"+a_CposSA1[n_i]+"/" $ c_CposNaoSA1 ) )
+
+        If ( CountStr(";", a_Cab[1]) == 2 ) 
+            a_Cab[1] += "Campos para Alterar (Opcional);"
+        ElseIf ( CountStr(";", a_Cab[1]) == 3 )
+            a_Cab[1] += "Comece a digitar a partir da 5° linha do arquivo!;"
+        Else 
+            a_Cab[1] += ";"
+        EndIf
+    
+        a_Cab[2] += a_CposSA1[n_i]+";"
+        a_Cab[3] += AllTrim(FWSX3Util():GetDescription(a_CposSA1[n_i]))+";"
+        a_Cab[4] += AllTrim(Replace(GetSx3Cache(a_CposSA1[n_i], "X3_CBOX"),";","/"))+";"
+    EndIf
+Next n_i 
+
+c_NomArq := "Alteracao_Clientes_SA1.csv"
+c_IdentArq := "Alteração de Clientes (SA1)"
+
+Return ( a_Cab )
+/*/{Protheus.doc} ImpArq
+Faço a importação do arquivo .csv com os dados dos clientes.
+@type function
+@author Henrique Freitas Alves
+@since 10/11/2025
+/*/
+Static Function ImpArq()
+
+Local a_Linhas  := {}
+Local a_CliRel  := {} 
+Local c_Caminho := tFileDialog("Arquivo .csv (*.csv)"/*[cMascara]*/, "Escolha o arquivo .csv com os dados preenchidos!"/*[cTitulo]*/, /*[nMascpadrao]*/, /*[cDirinicial]*/, .F./*[lSalvar]*/, /*[nOpcoes]*/)
+Local c_Titulo  := ""
+Local c_Mensagem:= ""
+Local c_Solucao := ""
+Local n_Handle  := FOpen(c_Caminho/*cArq*/, /*nModo*/, /*xParam3*/, /*lChangeCase*/.F.)
+Local n_QtdCli  := 0 
+Local l_Ret     := .T.
+
+If (n_Handle == -1)
+    MsgAlert(Str(Ferror()))
+Else
+    a_Linhas := U_CsvToArr(n_Handle) 
+    If ( Empty(a_Linhas) )
+        c_Titulo := "Arquivo sem conteúdo!"
+        c_Mensagem := "Não foi possível ler nenhuma linha do arquivo!"
+        c_Solucao := "Por favor, gere o arquivo modelo novamente e inclua os dados com a estrutura presente."
+        l_Ret := .F.
+    ElseIf ( Len(a_Linhas) < 5 ) 
+        c_Titulo := "Arquivo inválido!"
+        c_Mensagem := "O arquivo precisa ter, no mínimo, 5 linhas (4 de cabeçalho + 1 de dados)!"
+        c_Solucao := "Por favor, gere o arquivo modelo novamente e inclua os dados com a estrutura presente."
+        l_Ret := .F.
+    EndIf 
+
+    If ( l_Ret )
+
+        FWMsgRun( /*[oComponent]*/, {|| l_Ret := Processa(a_Linhas, @n_QtdCli, @c_Mensagem, @a_CliRel) }/*<bAction>*/, "Processando planilha de alteração de clientes."/*[cHeader]*/, "Alterando clientes conforme a planilha..."/*[cText]*/)
+
+        If ( !l_Ret )
+            c_Titulo := "Erro ao processar o arquivo! "
+            c_Solucao := "Agir de acordo com a mensagem."
+            l_Ret := .F.
+        EndIf
+        
+    EndIf
+
+    If ( l_Ret )
+        If ( n_QtdCli == 0 )
+            FWAlertInfo("Nenhum cliente foi processado!", "Informativo - FINPGR02")
+        Else
+            c_Mensagem := "Clientes alterados: "+CValToChar(n_QtdCli)+"."
+            FWAlertSuccess("Clientes alterados com sucesso!"+CRLF+c_Mensagem+CRLF+"Será gerado um arquivo com os clientes alterados.", "Sucesso - FINPGR02")
+            GeraArquivo(a_CliRel)
+        EndIf
+    Else 
+        Help(Nil, Nil, c_Titulo+" - FINPGR02", Nil, c_Mensagem, ;
+             1, 0, Nil, Nil, Nil, Nil, Nil, {c_Solucao})
+    EndIf 
+EndIf
+
+FWFreeArray(a_Linhas)
+
+Return Nil
+
+/*/{Protheus.doc} Processa
+Faço o processamento do arquivo de alteração de clientes.
+@type function
+@author Henrique Freitas Alves
+@since 10/11/2025
+@param a_Linhas, array, Array com as linhas do arquivo.
+@param n_QtdCli, integer, (Por Referência) Retorna a quantidade de clientes alterados.
+@param c_Mensagem, character, (Por Referência) Retorna a mensagem de erro, se houver.
+@param a_CliRel, array, (Por Referência) Array para logar o resultado da alteração.
+@return l_Ret, logical, Retorna .T. se a alteração foi bem-sucedida, .F. se houve falha.
+/*/
+Static Function Processa(a_Linhas, n_QtdCli, c_Mensagem, a_CliRel)
+
+Local a_Areas   := {FWGetArea()}
+Local a_Cliente := {} 
+Local n_i       := 0
+Local n_j       := 0
+Local n_PosCod  := AScan(a_Linhas[2],{|x| AllTrim(Upper(x)) == "A1_COD"})
+Local n_PosLoja := AScan(a_Linhas[2],{|x| AllTrim(Upper(x)) == "A1_LOJA"})
+Local c_CodCli  := ""
+Local c_LojaCli := ""
+Local c_Campo   := ""
+Local x_Valor   := Nil
+Local l_Ret     := .T.
+
+AAdd(a_Areas, SA1->(FWGetArea()))
+
+If ( n_PosCod == 0 .OR. n_PosLoja == 0 )
+    c_Mensagem := "O cabeçalho do arquivo é inválido. Colunas obrigatórias [A1_COD] e [A1_LOJA] não estão presentes."
+    l_Ret := .F.
+EndIf
+
+If ( l_Ret )
+
+    For n_i := 5 To Len(a_Linhas) 
+        a_Cliente := {} 
+        c_CodCli  := AllTrim(a_Linhas[n_i][n_PosCod])
+        c_LojaCli := AllTrim(a_Linhas[n_i][n_PosLoja])
+
+        If ( Empty(c_CodCli) .OR. Empty(c_LojaCli) )
+            c_Mensagem := "Código do Cliente ou Loja não preenchidos."
+            l_Ret := .F.
+            Exit
+        ElseIf ( !VldCli(c_CodCli, c_LojaCli) ) 
+            c_Mensagem := "O cliente ["+c_CodCli+"-"+c_LojaCli+"] não foi localizado no sistema."
+            l_Ret := .F.
+            Exit
+        Else
+            For n_j := 1 To Len(a_Linhas[2]) 
+
+                c_Campo := AllTrim(Upper(a_Linhas[2][n_j]))
+                x_Valor := a_Linhas[n_i][n_j]
+
+                If ( !(c_Campo $ "A1_COD/A1_LOJA") .AND. "A1_" $ c_Campo )
+                    AAdd(a_Cliente, {c_Campo, RetValorTipo(x_Valor, c_Campo), Nil})
+                EndIf
+            Next n_j
+
+            If ( !Empty(a_Cliente) )
+                If ( !AtualizaCliente(c_CodCli, c_LojaCli, a_Cliente, @c_Mensagem, @a_CliRel) )
+                    l_Ret := .F.
+                    Exit
+                Else
+                    n_QtdCli++
+                EndIf
+            EndIf
+        EndIf   
+    Next n_i
+
+    If ( !l_Ret )
+        c_Mensagem := "Erro na linha ["+CValToChar(n_i)+"] da planilha."+CRLF+RTrim(c_Mensagem)
+        DisarmTransaction()
+    EndIf
+EndIf
+
+For n_i := 1 To Len(a_Areas)
+    FWRestArea(a_Areas[n_i])
+Next n_i
+
+Return ( l_Ret )
+
+/*/{Protheus.doc} RetValorTipo
+Converte um valor (x_Valor) para o tipo de dado correto de acordo com o campo.
+@type function
+@author Henrique Freitas Alves
+@since 10/11/2025
+@param x_Valor, variant, O valor a ser convertido.
+@param c_Campo, character, O campo que define o tipo de dado.
+@return x_Retorno, variant, O valor convertido para o tipo correto.
+/*/
+Static Function RetValorTipo(x_Valor, c_Campo)
+Local c_TipoCampo as character
+Local c_TipoValor as character
+Local x_Retorno   as variant 
+
+x_Retorno := x_Valor
+c_TipoCampo := FWSX3Util():GetFieldType(c_Campo)
+
+If x_Valor == Nil
+    Do Case
+        Case ( c_TipoCampo == "N" )
+            x_Retorno := 0
+        Case ( c_TipoCampo == "C" )
+            x_Retorno := ""
+        Case ( c_TipoCampo == "D" )
+            x_Retorno := CToD("")
+        Case ( c_TipoCampo == "L" )
+            x_Retorno := .F.
+    EndCase
+Else
+    c_TipoValor := ValType(x_Valor)
+    Do Case
+        Case ( c_TipoCampo == "N" )
+            If ( c_TipoValor != "N" )
+                If ( c_TipoValor == "C" )
+                    x_Retorno := Val(Replace(x_Valor, ",", ".")) 
+                Else
+                    x_Retorno := Val(x_Valor) 
+                EndIf
+            EndIf
+            x_Retorno := Round(x_Retorno, TamSX3(c_Campo)[2])
+        Case ( c_TipoCampo == "C" )
+            If ( c_TipoValor != "C" )
+                x_Retorno := CValToChar(x_Valor) 
+            Else
+                x_Retorno := AllTrim(x_Valor)
+            EndIf
+        Case ( c_TipoCampo == "D" )
+            If ( c_TipoValor != "D" )
+                If ( c_TipoValor == "C" .AND. !Empty(x_Valor) )
+                    If ( "/" $ x_Valor )
+                        x_Retorno := CToD(x_Valor)
+                    Else
+                        x_Retorno := SToD(x_Valor)
+                    EndIf
+                Else
+                    x_Retorno := CToD("")
+                EndIf
+            EndIf
+    EndCase
+EndIf
+
+Return ( x_Retorno )
+/*/{Protheus.doc} AtualizaCliente
+Atualiza o cadastro de um cliente (SA1) usando a rotina de "Clientes" (CRMA980) via U_MVCExec.
+@type Static Function
+@author Henrique Freitas Alves
+@since 10/11/2025
+@version 1.0
+@param c_CodCli, character, O código do cliente (A1_COD) a ser alterado.
+@param c_LojaCli, character, A loja do cliente (A1_LOJA) a ser alterada.
+@param a_Cliente, array, Array de dados (modelo SA1_MASTER) para o U_MVCExec.
+@param c_Mensagem, character, (Por Referência) Retorna a mensagem de erro, se houver.
+@param a_CliRel, array, (Por Referência) Array para logar o resultado da alteração.
+@return l_Ret, logical, Retorna .T. se a alteração foi bem-sucedida, .F. se houve falha.
+/*/
+Static Function AtualizaCliente(c_CodCli, c_LojaCli, a_Cliente, c_Mensagem, a_CliRel)
+
+Local l_Ret         := .T.
+
+DbSelectArea("SA1")
+DbSetOrder(1)
+DbGoTop()
+If ( SA1->(MsSeek(xFilial("SA1")+PadR(c_CodCli, TamSX3("A1_COD")[1])+PadR(c_LojaCli, TamSX3("A1_LOJA")[1]))) )
+
+    MsExecAuto({|| l_Ret := U_MVCExec(MODEL_OPERATION_UPDATE, "CRMA980", {{"SA1", "SA1MASTER", a_Cliente}}, Nil, @c_Mensagem) } )
+    
+    If ( l_Ret )
+
+        AAdd(a_CliRel, {SA1->A1_COD, SA1->A1_LOJA, SA1->A1_NOME, "Alterado com Sucesso"})
+    Else
+        c_Mensagem := "Erro ao alterar cliente ["+c_CodCli+"-"+c_LojaCli+"]. Motivo: "+c_Mensagem
+        l_Ret := .F.
+    EndIf
+Else
+    c_Mensagem := "Erro ao alterar cliente ["+c_CodCli+"-"+c_LojaCli+"]. Motivo: Cliente não localizado."
+    l_Ret := .F.
+EndIf
+
+Return ( l_Ret )
+/*/{Protheus.doc} VldCli
+Valida o cliente (SA1).
+@type function
+@author Henrique Freitas Alves
+@since 10/11/2025
+@param c_Cliente, character, O código do cliente (A1_COD) a ser validado.
+@param c_Loja, character, A loja do cliente (A1_LOJA) a ser validada.
+@return l_Ret, logical, Retorna .T. se o cliente for encontrado, .F. caso contrário.
+/*/
+Static Function VldCli(c_Cliente, c_Loja)
+
+Local l_Ret := .F.
+
+DbSelectArea("SA1")
+DbSetOrder(1) //A1_FILIAL, A1_COD, A1_LOJA
+DbGoTop()
+If (MsSeek(xFilial("SA1") + PadR(c_Cliente, TamSX3("A1_COD")[1]) + PadR(c_Loja, TamSX3("A1_LOJA")[1])))
+    l_Ret := .T.
+EndIf
+
+Return ( l_Ret )
+/*/{Protheus.doc} GeraArquivo
+Gera um arquivo Excel (.xlsx) com o resumo dos clientes que foram alterados com sucesso.
+@type function
+@author Henrique Freitas Alves
+@since 10/11/2025
+@param a_CliRel, array, Array com as informações dos clientes.
+/*/
+Static Function GeraArquivo(a_CliRel) 
+
+Local a_FntCb1  := {"Calibri"/*<c_Fonte>*/, 25/*<n_Size>*/, .F./*<l_Italic>*/, .T. /*<l_Bold>*/, .F./*<l_Underline>*/}
+Local a_FntCb2  := {"Calibri"/*<c_Fonte>*/, 15/*<n_Size>*/, .F./*<l_Italic>*/, .T. /*<l_Bold>*/, .F./*<l_Underline>*/}
+Local a_FntItCb := {"Calibri"/*<c_Fonte>*/, 16/*<n_Tamanho>*/, .F./*<l_Italic>*/, .F. /*<l_Bold>*/, .F./*<l_Underline>*/}
+Local a_FntIte  := {;
+                     {"Calibri"/*<c_Fonte>*/, 12/*<n_Tamanho>*/, .F./*<l_Italic>*/, .F. /*<l_Bold>*/, .F./*<l_Underline>*/, ".T."/*<c_Condicao>*/};
+                   }
+Local a_FmtTit  := {N_HORIZ_CENTER/*<c_Horiz>*/, N_VERT_CENTER/*<c_Vertic>*/, .F./*<l_TextWrap>*/, 0/*<n_RotDegrs>*/, /*<c_TextClr>*/, "22C55E"/*<c_BackClr>*/, /*<c_CstmFmt>*/}
+Local a_FmTite  := {}
+Local a_Borders := {} 
+Local a_FmtSubT := {N_HORIZ_LEFT  /*<c_Horiz>*/,              /*<c_Vertic>*/, .F./*<l_TextWrap>*/, 0/*<n_RotDegrs>*/, /*<c_TextClr>*/,         /*<c_BackClr>*/, /*<c_CstmFmt>*/}
+Local a_FmtCols := {N_HORIZ_CENTER/*<c_Horiz>*/, N_VERT_CENTER/*<c_Vertic>*/, .F./*<l_TextWrap>*/, 0/*<n_RotDegrs>*/, /*<c_TextClr>*/, "4ED07E"/*<c_BackClr>*/, /*<c_CstmFmt>*/}
+Local a_Cols    := {;
+                    {15 /*<nWidth>*/, "Código"          /*<cValue>*/, a_FntItCb/*<a_Fnt>*/, a_FmtCols/*<a_CellFmt>*/, {}/*<a_MergeCells>*/};
+                ,   {10 /*<nWidth>*/, "Loja"            /*<cValue>*/, {}/*<a_Fnt>*/, {}/*<a_CellFmt>*/, {}};
+                ,   {40 /*<nWidth>*/, "Nome do Cliente" /*<cValue>*/, {}/*<a_Fnt>*/, {}/*<a_CellFmt>*/, {}};
+                ,   {25 /*<nWidth>*/, "Status"          /*<cValue>*/, {}/*<a_Fnt>*/, {}/*<a_CellFmt>*/, {}};
+}
+Local a_Rel     := {}
+Local c_Caminho := GetTempPath()
+Local c_Arquivo := "CLIENTES_ALTERADOS_"+StrTran(StrTran(DToC(MsDate()), "/","")," ","_")+"_"+StrTran(StrTran(Time(), ":","")," ","_")
+Local c_CaminArq:= ""
+
+a_Rel := {;
+    {;  
+        "Clientes Alterados",; //Nome da sheet
+        {; //Setor do cabeçalho
+            {; //1° Parte do cabeçalho
+                 a_FntCb1;                                                   //Fonte
+            ,    a_FmtTit;                                                   //Formatação da células
+            ,    {1/*n_RowFrom*/, 1/*n_ColFrom*/, 2/*n_RowTo*/, /*n_ColTo*/};//Dar merge nas celulas
+            ,    1;                                                          //Número da coluna que ele vai começar
+            ,    "Clientes Alterados em Massa";                              //Texto
+            ,    .T.;                                                        //Se pula a linha
+            },{; //2° Parte do cabeçalho
+                a_FntCb2;                //Fonte
+            ,    a_FmtSubT;              //Formatação da células
+            ,    {};                     //Dar merge nas celulas
+            ,    1;                      //Número da coluna que ele vai começar
+            ,    "Data: "+DToC(MsDate());//Texto
+            ,    .F.;                    //Se pula a linha
+            },;
+            {; //3° Parte do cabeçalho
+                 a_FntCb2;                                                    //Fonte
+            ,    a_FmtSubT;                                                   //Formatação da células
+            ,    {3/*n_RowFrom*/, 2/*n_ColFrom*/, 3/*n_RowTo*/, 3/*n_ColTo*/};//Dar merge nas celulas
+            ,    2;                                                           //Número da coluna que ele vai começar
+            ,    "Hora: "+Time();                                             //Texto
+            ,    .F.;                                                         //Se pula a linha
+            },;
+            {; //4° Parte do cabeçalho
+                a_FntCb2;                                                    //Fonte
+            ,    a_FmtSubT;                                                  //Formatação da células
+            ,    {3/*n_RowFrom*/, 4/*n_ColFrom*/, 3/*n_RowTo*/, /*n_ColTo*/};//Dar merge nas celulas
+            ,    3;                                                          //Número da coluna que ele vai começar
+            ,    "";                                                         //Texto
+            ,    .T.;                                                        //Se pula a linha
+            };
+        },;  
+        {; //Setor dos itens do relatório
+            {"64D68E","7ADC9E"}; //Cores dos itens
+        ,    a_FntIte;           //Fonte dos itens
+        ,    a_FmtIte;           //Formatação das células.
+        ,    a_Cols;             //Título dos campos
+        ,    a_CliRel;           //Data
+        ,    Nil;                //Número das colunas
+        ,    Nil;                //Query
+        ,    .T.;                //Se filtra por coluna.
+        },;
+        a_Borders;
+    };
+}
+
+If ( U_EasyExcel(Nil, Nil, c_Caminho, c_Arquivo, @c_CaminArq, a_Rel, Nil/*[n_Linha]*/, .T./*[l_Finaliza]*/) )
+    ShellExecute("OPEN", c_Arquivo+".xlsx", "", c_Caminho, 1) 
+EndIf
+
+Return Nil
+
+/*/{Protheus.doc} FormataCpoCSV
+Formata um valor (qualquer tipo) para uma string segura para CSV.
+@type Static Function
+@author Henrique Freitas Alves
+@since 10/11/2025
+@param x_Value, variant, O valor a ser formatado.
+@return character, O valor formatado como string.
+/*/
+Static Function FormataCpoCSV(x_Value)
+
+Local c_Ret := ""
+
+Do Case
+    Case ValType(x_Value) == "C"
+        c_Ret := AllTrim(x_Value)
+    Case ValType(x_Value) == "N"
+        c_Ret := CValToChar(x_Value) 
+    Case ValType(x_Value) == "D"
+        If Empty(x_Value)
+            c_Ret := ""
+        Else
+            c_Ret := DToC(x_Value) 
+        EndIf
+    Case ValType(x_Value) == "L"
+        c_Ret := If(x_Value, "S", "N")
+    Otherwise
+        c_Ret := ""
+EndCase
+
+c_Ret := StrTran(c_Ret, ";", ",") 
+c_Ret := StrTran(c_Ret, '"', '""')
+If ("," $ c_Ret)
+    c_Ret := '"' + c_Ret + '"'
+EndIf
+
+Return ( c_Ret )
+/*/{Protheus.doc} ValPerg
+Cria o grupo de perguntas passado por parâmetro para a tela.
+@type Static Function
+@author Henrique Freitas Alves
+@since 10/11/2025
+@version 1.0
+@param c_Perg, character, O nome do grupo de perguntas.
+/*/
+Static Function ValPerg(c_Perg As Character)
+
+Local a_Regs := {} As Array
+
+DbSelectArea("SX1")
+
+AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/, "Cliente De:"    /*X1_PERGUNT*/, ""/*X1_PERSPA*/, ""/*X1_PERENG*/, ""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_COD")[1]    /*X1_TAMANHO*/, 0/*X1_DECIMAL*/, 0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""/*X1_VALID*/, "MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/, ""                                     /*X1_DEF01*/, ""/*X1_DEFSPA1*/, ""/*X1_DEFENG1*/, ""/*X1_CNT01*/, ""/*X1_VAR02*/, ""/*X1_DEF02*/, ""/*X1_DEFSPA2*/, ""/*X1_DEFENG2*/, ""/*X1_CNT02*/, ""/*X1_VAR03*/, ""/*X1_DEF03*/, ""/*X1_DEFSPA3*/, ""/*X1_DEFENG3*/, ""/*X1_CNT03*/, ""/*X1_VAR04*/, ""/*X1_DEF04*/, ""/*X1_DEFSPA4*/, ""/*X1_DEFENG4*/, ""/*X1_CNT04*/, ""/*X1_VAR05*/, ""/*X1_DEF05*/, ""/*X1_DEFSPA5*/, ""/*X1_DEFENG5*/, ""/*X1_CNT05*/, "SA1"/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})    
+AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/, "Cliente Ate:"   /*X1_PERGUNT*/, ""/*X1_PERSPA*/, ""/*X1_PERENG*/, ""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_COD")[1]    /*X1_TAMANHO*/, 0/*X1_DECIMAL*/, 0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""/*X1_VALID*/, "MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/, PadR("Z", TamSX3("A1_COD")[1], "Z")    /*X1_DEF01*/, ""/*X1_DEFSPA1*/, ""/*X1_DEFENG1*/, ""/*X1_CNT01*/, ""/*X1_VAR02*/, ""/*X1_DEF02*/, ""/*X1_DEFSPA2*/, ""/*X1_DEFENG2*/, ""/*X1_CNT02*/, ""/*X1_VAR03*/, ""/*X1_DEF03*/, ""/*X1_DEFSPA3*/, ""/*X1_DEFENG3*/, ""/*X1_CNT03*/, ""/*X1_VAR04*/, ""/*X1_DEF04*/, ""/*X1_DEFSPA4*/, ""/*X1_DEFENG4*/, ""/*X1_CNT04*/, ""/*X1_VAR05*/, ""/*X1_DEF05*/, ""/*X1_DEFSPA5*/, ""/*X1_DEFENG5*/, ""/*X1_CNT05*/, "SA1"/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/, "Loja De:"       /*X1_PERGUNT*/, ""/*X1_PERSPA*/, ""/*X1_PERENG*/, ""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_LOJA")[1]   /*X1_TAMANHO*/, 0/*X1_DECIMAL*/, 0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""/*X1_VALID*/, "MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/, ""                                     /*X1_DEF01*/, ""/*X1_DEFSPA1*/, ""/*X1_DEFENG1*/, ""/*X1_CNT01*/, ""/*X1_VAR02*/, ""/*X1_DEF02*/, ""/*X1_DEFSPA2*/, ""/*X1_DEFENG2*/, ""/*X1_CNT02*/, ""/*X1_VAR03*/, ""/*X1_DEF03*/, ""/*X1_DEFSPA3*/, ""/*X1_DEFENG3*/, ""/*X1_CNT03*/, ""/*X1_VAR04*/, ""/*X1_DEF04*/, ""/*X1_DEFSPA4*/, ""/*X1_DEFENG4*/, ""/*X1_CNT04*/, ""/*X1_VAR05*/, ""/*X1_DEF05*/, ""/*X1_DEFSPA5*/, ""/*X1_DEFENG5*/, ""/*X1_CNT05*/, ""   /*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/, "Loja Ate:"      /*X1_PERGUNT*/, ""/*X1_PERSPA*/, ""/*X1_PERENG*/, ""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_LOJA")[1]   /*X1_TAMANHO*/, 0/*X1_DECIMAL*/, 0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""/*X1_VALID*/, "MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/, PadR("Z", TamSX3("A1_LOJA")[1], "Z")   /*X1_DEF01*/, ""/*X1_DEFSPA1*/, ""/*X1_DEFENG1*/, ""/*X1_CNT01*/, ""/*X1_VAR02*/, ""/*X1_DEF02*/, ""/*X1_DEFSPA2*/, ""/*X1_DEFENG2*/, ""/*X1_CNT02*/, ""/*X1_VAR03*/, ""/*X1_DEF03*/, ""/*X1_DEFSPA3*/, ""/*X1_DEFENG3*/, ""/*X1_CNT03*/, ""/*X1_VAR04*/, ""/*X1_DEF04*/, ""/*X1_DEFSPA4*/, ""/*X1_DEFENG4*/, ""/*X1_CNT04*/, ""/*X1_VAR05*/, ""/*X1_DEF05*/, ""/*X1_DEFSPA5*/, ""/*X1_DEFENG5*/, ""/*X1_CNT05*/, ""   /*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/, "Cond.Pagto de:" /*X1_PERGUNT*/, ""/*X1_PERSPA*/, ""/*X1_PERENG*/, ""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_COND")[1]   /*X1_TAMANHO*/, 0/*X1_DECIMAL*/, 0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""/*X1_VALID*/, "MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/, ""                                     /*X1_DEF01*/, ""/*X1_DEFSPA1*/, ""/*X1_DEFENG1*/, ""/*X1_CNT01*/, ""/*X1_VAR02*/, ""/*X1_DEF02*/, ""/*X1_DEFSPA2*/, ""/*X1_DEFENG2*/, ""/*X1_CNT02*/, ""/*X1_VAR03*/, ""/*X1_DEF03*/, ""/*X1_DEFSPA3*/, ""/*X1_DEFENG3*/, ""/*X1_CNT03*/, ""/*X1_VAR04*/, ""/*X1_DEF04*/, ""/*X1_DEFSPA4*/, ""/*X1_DEFENG4*/, ""/*X1_CNT04*/, ""/*X1_VAR05*/, ""/*X1_DEF05*/, ""/*X1_DEFSPA5*/, ""/*X1_DEFENG5*/, ""/*X1_CNT05*/, "SE4"/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/, "Cond.Pagto até:"/*X1_PERGUNT*/, ""/*X1_PERSPA*/, ""/*X1_PERENG*/, ""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_COND")[1]   /*X1_TAMANHO*/, 0/*X1_DECIMAL*/, 0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""/*X1_VALID*/, "MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/, PadR("Z", TamSX3("A1_CONDPAG")[1], "Z")/*X1_DEF01*/, ""/*X1_DEFSPA1*/, ""/*X1_DEFENG1*/, ""/*X1_CNT01*/, ""/*X1_VAR02*/, ""/*X1_DEF02*/, ""/*X1_DEFSPA2*/, ""/*X1_DEFENG2*/, ""/*X1_CNT02*/, ""/*X1_VAR03*/, ""/*X1_DEF03*/, ""/*X1_DEFSPA3*/, ""/*X1_DEFENG3*/, ""/*X1_CNT03*/, ""/*X1_VAR04*/, ""/*X1_DEF04*/, ""/*X1_DEFSPA4*/, ""/*X1_DEFENG4*/, ""/*X1_CNT04*/, ""/*X1_VAR05*/, ""/*X1_DEF05*/, ""/*X1_DEFSPA5*/, ""/*X1_DEFENG5*/, ""/*X1_CNT05*/, "SE4"/*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/, "Segmento de:"   /*X1_PERGUNT*/, ""/*X1_PERSPA*/, ""/*X1_PERENG*/, ""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_SATIV1")[1] /*X1_TAMANHO*/, 0/*X1_DECIMAL*/, 0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""/*X1_VALID*/, "MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/, ""                                     /*X1_DEF01*/, ""/*X1_DEFSPA1*/, ""/*X1_DEFENG1*/, ""/*X1_CNT01*/, ""/*X1_VAR02*/, ""/*X1_DEF02*/, ""/*X1_DEFSPA2*/, ""/*X1_DEFENG2*/, ""/*X1_CNT02*/, ""/*X1_VAR03*/, ""/*X1_DEF03*/, ""/*X1_DEFSPA3*/, ""/*X1_DEFENG3*/, ""/*X1_CNT03*/, ""/*X1_VAR04*/, ""/*X1_DEF04*/, ""/*X1_DEFSPA4*/, ""/*X1_DEFENG4*/, ""/*X1_CNT04*/, ""/*X1_VAR05*/, ""/*X1_DEF05*/, ""/*X1_DEFSPA5*/, ""/*X1_DEFENG5*/, ""/*X1_CNT05*/, "T3" /*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+AAdd(a_Regs,{c_Perg/*X1_GRUPO*/, StrZero(Len(a_Regs)+1, 2)/*X1_ORDEM*/, "Segmento até:"  /*X1_PERGUNT*/, ""/*X1_PERSPA*/, ""/*X1_PERENG*/, ""/*X1_VARIAVL*/, "C"/*X1_TIPO*/, TamSX3("A1_SATIV1")[1] /*X1_TAMANHO*/, 0/*X1_DECIMAL*/, 0/*X1_PRESEL*/, "G"/*X1_GSC*/, ""/*X1_VALID*/, "MV_PAR"+StrZero(Len(a_Regs)+1, 2)/*X1_VAR01*/, PadR("Z", TamSX3("A1_SATIV1")[1], "Z") /*X1_DEF01*/, ""/*X1_DEFSPA1*/, ""/*X1_DEFENG1*/, ""/*X1_CNT01*/, ""/*X1_VAR02*/, ""/*X1_DEF02*/, ""/*X1_DEFSPA2*/, ""/*X1_DEFENG2*/, ""/*X1_CNT02*/, ""/*X1_VAR03*/, ""/*X1_DEF03*/, ""/*X1_DEFSPA3*/, ""/*X1_DEFENG3*/, ""/*X1_CNT04*/, ""/*X1_VAR04*/, ""/*X1_DEF04*/, ""/*X1_DEFSPA4*/, ""/*X1_DEFENG4*/, ""/*X1_CNT04*/, ""/*X1_VAR05*/, ""/*X1_DEF05*/, ""/*X1_DEFSPA5*/, ""/*X1_DEFENG5*/, ""/*X1_CNT05*/, "T3" /*X1_F3*//*X1_PYME,X1_GRPSXG,X1_HELP,X1_PICTURE,X1_IDFIL*/})
+
+U_PutX1GRA(c_Perg, a_Regs)
+
+Return Nil

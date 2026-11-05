@@ -1,0 +1,1022 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TBICONN.CH"
+
+#DEFINE NCOL_MOD1_OPERACAO    1 
+#DEFINE NCOL_MOD1_COD_FORNECEDOR  2
+#DEFINE NCOL_MOD1_COD_LOJA 3
+// #DEFINE NCOL_MOD1_NOVO_PRECO  5
+// #DEFINE NCOL_MOD1_NOVO_DATVIG 6
+
+#DEFINE NCOL_MOD2_OPERACAO    1
+#DEFINE NCOL_MOD2_COD_FILIAL  2
+#DEFINE NCOL_MOD2_COD_CLI     3
+#DEFINE NCOL_MOD2_LOJA_CLI    4
+#DEFINE NCOL_MOD2_COD_PRODUTO 5
+#DEFINE NCOL_MOD2_NOVO_PRECO  6
+#DEFINE NCOL_MOD2_DESCONTO    7
+
+#DEFINE NCOL_MOD3_COD_CLI       1
+#DEFINE NCOL_MOD3_LOJA_CLI      2
+#DEFINE NCOL_MOD3_COD_VEND      3
+#DEFINE NCOL_MOD3_NOME_FANTASIA 4
+#DEFINE NCOL_MOD3_COD_TABELA    5
+#DEFINE NCOL_MOD3_GRUPO_VENDAS  6
+#DEFINE NCOL_MOD3_SEGMENTO      7
+
+#DEFINE NCOL_MOD4_OPERACAO     1
+#DEFINE NCOL_MOD4_COD_FILIAL   2
+#DEFINE NCOL_MOD4_GRUPO_VENDAS 3
+#DEFINE NCOL_MOD4_UF           4
+#DEFINE NCOL_MOD4_TARIFA_FRETE 5
+#DEFINE NCOL_MOD4_VLR_KG       6
+
+User Function TesteINCFOREX()
+
+    PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01" USER "ADMIN" PASSWORD "1234"
+
+        U_INCFOREX()
+
+    RESET ENVIRONMENT
+
+Return
+
+/*/{Protheus.doc} INCFOREX
+    Tela para gerenciar as ações envolvendo a tabela de fornecedores.
+    @type function
+    @version 1.0
+    @author Gabriel Lacerda Correia
+    @since 28/09/2026
+/*/
+User Function INCFOREX() 
+
+    Local o_Dlg     := Nil
+    Local o_MenuCab := Nil
+    Local o_FontTit := Nil
+    Local o_FontBut := Nil
+    Local o_PainTop := Nil
+    Local o_PainMid := Nil
+    Local o_PainBot := Nil
+    Local o_ButtonEx:= Nil
+    Local o_ButtonIm:= Nil
+    Local o_ButtonLg:= Nil
+    Local c_Versao  := "19/10/2026"
+    Local c_Users   := AllTrim(SuperGetMV("GR_ALBFR", .F., "000445" , Nil))
+    Local n_RightDlg:= 600
+
+    If ( RetCodUsr() $ c_Users .OR. FWIsAdmin() )
+
+        o_Dlg := TDialog():New(000/*[nTop]*/, 000/*[nLeft]*/, 180/*[nBottom]*/, n_RightDlg/*[nRight]*/, "Central do Fornecedor V. "+c_Versao/*[cCaption]*/,/*[uParam6]*/,/*[uParam7]*/,/*[uParam8]*/,/*[uParam9]*/,/*[nClrText]*/,/*[nClrBack]*/,/*[uParam12]*/,/*[oWnd]*/, .T./*[lPixel]*/,/*[uParam15]*/,/*[uParam16]*/,/*[uParam17]*/,/*[nWidth]*/,/*[nHeight]*/,/*[lTransparent]*/)
+
+        o_PainTop  := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/,/*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/,/*[nClrText]*/,/*[nClrBack]*/, 000/*[nWidth]*/, 035/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+        o_PainTop:Align := CONTROL_ALIGN_TOP
+
+        o_PainMid  := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/,/*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/,/*[nClrText]*/,/*[nClrBack]*/, 000/*[nWidth]*/, 000/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+        o_PainMid:Align := CONTROL_ALIGN_ALLCLIENT
+
+        o_PainBot  := TPanel():New(000/*[nRow]*/, 000/*[nCol]*/, ""/*[cText]*/, o_Dlg/*[oWnd]*/,/*[oFont]*/, .F./*[lCentered]*/, .F./*[uParam7]*/,/*[nClrText]*/,/*[nClrBack]*/, 000/*[nWidth]*/, 032/*[nHeight]*/, .F./*[lLowered]*/, .F./*[lRaised]*/)
+        o_PainBot:Align := CONTROL_ALIGN_BOTTOM
+
+        o_FontTit := TFont():New("Calibri"/*[cName]*/,/*[uPar2]*/, 030/*[nHeight]*/,/*[uPar4]*/, .T./*[lBold]*/,/*[uPar6]*/,/*[uPar7]*/,/*[uPar8]*/,/*[uPar9]*/, .F./*[lUnderline]*/, .F./*[lItalic]*/ )
+
+        o_FontBut := TFont():New("Calibri"/*[cName]*/,/*[uPar2]*/, 024/*[nHeight]*/,/*[uPar4]*/, .T./*[lBold]*/,/*[uPar6]*/,/*[uPar7]*/,/*[uPar8]*/,/*[uPar9]*/, .F./*[lUnderline]*/, .F./*[lItalic]*/ )
+
+        TSay():New(005/*[nRow]*/, 005/*[nCol]*/, {|| OemToAnsi("Central de ações para Fornecedores (SA2)") }/*[bText]*/, o_Dlg/*[oWnd]*/,/*[cPicture]*/, o_FontTit/*[oFont]*/,/*[uParam7]*/,/*[uParam8]*/,/*[uParam9]*/, .T./*[lPixels]*/,/*[nClrText]*/,/*[nClrBack]*/, 300/*[nWidth]*/, 030/*[nHeight]*/,/*[uParam15]*/,/*[uParam16]*/,/*[uParam17]*/,/*[uParam18]*/,/*[uParam19]*/,/*[lHTML]*/, 0/*[nTxtAlgHor]*/,/*[nTxtAlgVer]*/)
+
+        o_ButtonEx := TButton():New(005/*[nRow]*/, 005/*[nCol]*/, OemToAnsi("Exportar")/*[cCaption]*/, o_PainMid/*[oWnd]*/, {||}/*[bAction]*/, 080/*[nWidth]*/, 018/*[nHeight]*/,/*[uParam8]*/, o_FontBut/*[oFont]*/,/*[uParam10]*/, .T./*[lPixel]*/,/*[uParam12]*/,/*[uParam13]*/,/*[uParam14]*/,/*[bWhen]*/,/*[uParam16]*/,/*[uParam17]*/)
+
+        o_Menu := TMenu():New(/*[nTop]*/,/*[nLeft]*/,/*[nHeight]*/,/*[nWidth]*/, .T./*[lPopUp]*/,/*[cBmpName]*/,/*[oWnd]*/,/*[nClrNoSelect]*/,/*[nClrSelect]*/,/*[cArrowUpNoSel]*/,/*[cArrowUpSel]*/,/*[cArrowDownNoSel]*/,/*[cArrowDownSel]*/ )
+
+        o_MenuCab := TMenuItem():New(o_Menu/*<oParent>*/, "Exportar modelo com dados"/*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {||ExpArq(1)}/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+        o_Menu:Add(o_MenuCab)
+
+        o_MenuCab := TMenuItem():New(o_Menu/*<oParent>*/, "Exportar modelo sem dados"/*[cTitle]*/,/*[cParam3]*/,/*[lParam4]*/,/*[lActive]*/, {||ExpArq(2)}/*[bAction]*/,/*[cParam7]*/,/*[cResName]*/,/*[nParam9]*/,/*[cParam10]*/,/*[lParam11]*/,/*[nParam12]*/,/*[bParam13]*/,/*[lParam14]*/, .T./*[lPopup]*/ )
+        o_Menu:Add(o_MenuCab)
+
+        o_ButtonEx:SetPopUpMenu(o_Menu)
+
+        o_ButtonIm := TButton():New(005/*[nRow]*/, 090/*[nCol]*/, OemToAnsi("Importar")/*[cCaption]*/, o_PainMid/*[oWnd]*/, {|| ImpArq()}/*[bAction]*/, 080/*[nWidth]*/, 018/*[nHeight]*/,/*[uParam8]*/, o_FontBut/*[oFont]*/,/*[uParam10]*/, .T./*[lPixel]*/,/*[uParam12]*/,/*[uParam13]*/,/*[uParam14]*/,/*[bWhen]*/,/*[uParam16]*/,/*[uParam17]*/)
+
+        o_ButtonLg := TButton():New(005/*[nRow]*/, 175/*[nCol]*/, OemToAnsi("Logs")/*[cCaption]*/, o_PainMid/*[oWnd]*/, {|| RelLog() }/*[bAction]*/, 045/*[nWidth]*/, 018/*[nHeight]*/,/*[uParam8]*/, o_FontBut/*[oFont]*/,/*[uParam10]*/, .T./*[lPixel]*/,/*[uParam12]*/,/*[uParam13]*/,/*[uParam14]*/,/*[bWhen]*/,/*[uParam16]*/,/*[uParam17]*/)
+
+        TButton():New(005/*[nRow]*/, (n_RightDlg / 2) - 50/*[nCol]*/, "Sair"/*[cCaption]*/, o_PainBot/*[oWnd]*/, {|| o_Dlg:End() }/*[bAction]*/, 045/*[nWidth]*/, 020/*[nHeight]*/,/*[uParam8]*/, o_FontBut/*[oFont]*/,/*[uParam10]*/, .T./*[lPixel]*/,/*[uParam12]*/,/*[uParam13]*/,/*[uParam14]*/,/*[bWhen]*/,/*[uParam16]*/,/*[uParam17]*/)
+
+        o_Dlg:Activate(/*[uParam1]*/,/*[uParam2]*/,/*[uParam3]*/, .T./*[lCentered]*/,/*[bValid]*/,/*[uParam6]*/,/*[bInit]*/,/*[uParam8]*/,/*[uParam9]*/ )
+
+    Else
+        Help(Nil, Nil, "Sem autorização - INCFOREX", Nil, "Você não tem acesso para utilizar. [GR_INCFOREX]",;
+            1, 0, Nil, Nil, Nil, Nil, Nil, {"Favor, solicitar para o departamento de compras."})
+    EndIf
+
+Return Nil
+
+/*/{Protheus.doc} RetCab
+    Retorna o cabeçalho padrão dos arquivos.
+    @type function
+    @version 1.0
+    @author Gabriel Lacerda Correia
+    @since 28/09/2026
+    @param c_NomeArquivo, character, Nome do arquivo csv
+    @return array, O cabeçalho com as informações do arquivo.
+/*/
+Static Function RetCab(c_NomeArquivo, c_IdentificacaoArq)
+
+    Local a_Cabecalho           := {"","","",""}
+    Local a_CamposSA2           := FWSX3Util():GetAllFields("SA2", .F./*lVirtual*/)
+    Local c_CamposSelecionados  := SuperGetMV("GR_COMP001", .F., "A2_NOME/A2_NREDUZ/A2_END/A2_NR_END/A2_BAIRRO/A2_EST/A2_COD_MUN/A2_MUN/A2_CEP/A2_TIPO/A2_CGC/A2_DDD/A2_TEL/A2_INSCR/A2_INSCRM/A2_XPRDTR/A2_PAISGIA/A2_PAIS/A2_BANCO/A2_AGENCIA/A2_NUMCON/A2_NATUREZ/A2_XNATBI/A2_COND/A2_CONTA/A2_EMAIL/A2_RECINSS/A2_CODPAIS/A2_GRPTRIB/A2_SIMPNAC/A2_TPNAT/A2_XEMLPAG/A2_XEMAIL/A2_MSBLQL/") // Campos permitidos
+    Local c_CamposProibidos     := SuperGetMV("GR_COMP002", .F., "/A2_FILIAL/A2_COD/A2_LOJA/") // Campos de chave/controle que nÃ£o devem ser alterados via planilha
+    Local n_I                   := 0
+
+    a_Cabecalho[1] += "Preencha a operação para executar a ação desejada;" 
+    a_Cabecalho[2] += "OPERAÇÃO;"
+    a_Cabecalho[3] += "E=Excluir/A=Alterar e Incluir;"
+    a_Cabecalho[4] += "Não apague essa linha;"
+
+    a_Cabecalho[1] += "Filial que esse fornecedor pertence;"
+    a_Cabecalho[2] += "A2_FILIAL;"
+    a_Cabecalho[3] += AllTrim(FWSX3Util():GetDescription("A2_FILIAL"))+";"
+    a_Cabecalho[4] += "Filial vazia = Compartilhada;"
+
+    a_Cabecalho[1] += "Identificação do Fornecedor (Obrigatório);"
+    a_Cabecalho[2] += "A2_COD;"
+    a_Cabecalho[3] += AllTrim(FWSX3Util():GetDescription("A2_COD"))+";"
+    a_Cabecalho[4] += "Não apague essa linha;"
+
+    a_Cabecalho[1] += "Preencha a filial, código e a loja;" 
+    a_Cabecalho[2] += "A2_LOJA;"
+    a_Cabecalho[3] += AllTrim(FWSX3Util():GetDescription("A2_LOJA"))+";"
+    a_Cabecalho[4] += "Opções em caso de combos ->;"
+
+    For n_I := 1 To Len(a_CamposSA2)
+
+        // Se o campo que estiver dentro de todos os campos da SA1 e Fora dos campos nÃ£o permitidos
+        If ( (a_CamposSA2[n_I]+"/" $ c_CamposSelecionados) .AND. !( "/"+a_CamposSA2[n_I]+"/" $ c_CamposProibidos ) )
+
+            // Conta quantas cÃ©lulas estÃ£o preenchidas com conteÃºdo
+            If ( CountStr(";", a_Cabecalho[1]) == 2 ) 
+                a_Cabecalho[1] += "Campos para Alterar (Opcional);"
+            ElseIf ( CountStr(";", a_Cabecalho[1]) == 3 )
+                a_Cabecalho[1] += "Comece a digitar a partir da 5° linha do arquivo!;"
+            Else 
+                a_Cabecalho[1] += ";"
+            EndIf
+
+            //Adiciona conteÃºdo na célula
+            a_Cabecalho[2] += a_CamposSA2[n_I]+";"
+            a_Cabecalho[3] += AllTrim(FWSX3Util():GetDescription(a_CamposSA2[n_I]))+";"
+
+            //Adiciona instruções de ComboBox caso tenha
+            a_Cabecalho[4] += AllTrim(Replace(GetSx3Cache(a_CamposSA2[n_I], "X3_CBOX"),";","/"))+";"
+
+        EndIf
+
+    Next n_I
+
+    c_NomeArquivo := "Alteracao_Fornecedores_SA2.csv"
+    c_IdentificacaoArq := "Alteração de Fornecedores (SA2)"
+
+Return ( a_Cabecalho )
+
+/*/{Protheus.doc} ImpArq
+    Faz a importação do arquivo .csv com os dados dos fornecedores
+    @type function
+    @version 1.0
+    @author Gabriel Lacerda Correia
+    @since 28/09/2026
+/*/
+Static Function ImpArq()
+
+    Local a_Linhas              := {}   as array
+    Local a_Cabecalho           := {}   as array
+    Local a_CabecalhoArr        := {}   as array
+    Local a_Linha               := {}   as array
+    Local c_Titulo              := ""   as character
+    Local c_NomeArquivo         := ""   as character
+    Local c_IdentificacaoArq    := ""   as character
+    Local c_Caminho             := ""   as character
+    Local c_MsgRun              := ""   as character
+    Local c_Mensagem            := ""   as character
+    Local c_Solucao             := ""   as character
+    Local n_Handle              := 0    as numeric
+    Local n_i                   := 0    as numeric
+    Local n_QtdAlt              := 0    as numeric
+    Local n_QtdInt              := 0    as numeric
+    Local n_QtdExc              := 0    as numeric
+    Local l_Ret                 := .T.  as logical
+
+    c_Caminho := tFileDialog("Arquivo .csv (*.csv)"/*[c_Mascara]*/, "Escolha o arquivo .csv com os dados preenchidos!"/*[cTitulo]*/, /*[nMascpadrao]*/, /*[cDirinicial]*/, .F./*[lSalvar]*/,/*[nOpcoes]*/)
+    n_Handle  := FOpen(c_Caminho/*cArq*/, /*nModo*/, /*xParam3*/, /*lChangeCase*/.F.)
+
+    If ( n_Handle == -1 )
+        MsgAlert(Str(Ferror()))
+    Else
+
+        a_Linhas := U_CsvToArr(n_Handle)
+
+        If ( Empty(a_Linhas) )
+
+            c_Titulo := "Arquivo sem conteúdo!"
+            c_Mensagem := "Não foi possível ler nenhuma linha do arquivo!"
+            c_Solucao := "Por favor, gere o arquivo modelo novamente e inclua os dados com a estrutura presente."
+            l_Ret := .F.
+
+        ElseIf ( Len(a_Linhas) < 5 )
+
+            c_Titulo := "Arquivo inválido!"
+            c_Mensagem := "O arquivo precisa ter, no mínimo, cinco linhas!"
+            c_Solucao := "Por favor, gere o o arquivo modelo novamente e inclua os dados com a estrutura presente."
+            l_Ret := .F.
+
+        Else
+
+            a_Cabecalho := RetCab(@c_NomeArquivo, @c_IdentificacaoArq)
+
+            For n_i := 1 To Len(a_Cabecalho)
+
+                a_Linha := StrTokArr2(a_Cabecalho[n_i]/*<cValue>*/, ";"/*<cToken>*/, .F./*[lEmptyStr]*/)
+                aAdd(a_CabecalhoArr, a_Linha)
+
+            Next
+
+            For n_i := 1 To Len(a_Cabecalho)
+
+                If ( n_i > Len(a_Linhas[2]) )
+                
+                    c_Titulo := "Cabeçalho inválido!"
+                    c_Mensagem := "Na posição "+CValToChar(n_i)+" não tem nenhum valor, mas deveria ter o valor: ["+a_Cabecalho[n_i][1]+"]!"
+                    c_Solucao := "Por favor, gere o o arquivo modelo novamente e inclua os dados com a estrutura presente."
+                    l_Ret := .F.
+                    Exit
+
+                ElseIf ( a_CabecalhoArr[2][n_i] != Upper(RTrim(a_Linhas[2][n_i])) )
+
+                    c_Titulo := "Campo inválido!"
+                    c_Mensagem := "Na posição "+CValToChar(n_i)+" o campo está como ["+a_Linhas[2][n_i]+"], mas deveria ser ["+a_CabecalhoArr[2][n_i]+"]!"
+                    c_Solucao := "Por favor, gere o o arquivo modelo novamente e inclua os dados com a estrutura presente."
+                    l_Ret := .F.
+                    Exit
+
+                EndIf
+
+            Next n_i
+
+        EndIf 
+
+        If ( l_Ret )
+
+            c_MsgRun := "Alterando base de fornecedores"
+
+            FWMsgRun(/*[oComponent]*/, {|| l_Ret := Processa(a_Linhas, @n_QtdAlt, @n_QtdInt, @n_QtdExc, @c_Mensagem)}/*<bAction>*/, "Alterações em massa."/*[cHeader]*/, c_MsgRun+"..."/*[cText]*/)
+                                                    
+            If ( !l_Ret )
+
+                c_Titulo := "Erro ao processar o arquivo! "
+                c_Solucao := "Agir de acordo com a mensagem."
+                l_Ret := .F.
+
+            EndIf
+
+        EndIf
+
+        If ( !l_Ret )
+
+            Help(Nil, Nil, c_Titulo+" - INCFOREX", Nil, c_Mensagem, 1, 0, Nil, Nil, Nil, Nil, Nil, {c_Solucao})
+
+        Else 
+
+            If ( n_QtdAlt+n_QtdInt+n_QtdExc == 0 )
+
+                FWAlertInfo("Nenhuma alteração foi processada!", "Informativo - INCFOREX")
+            Else
+                c_Mensagem := ""
+
+                If ( n_QtdInt > 0 )
+                    c_Mensagem := "Incluídos: "+CValToChar(n_QtdInt)
+                EndIf
+
+                If ( n_QtdAlt > 0 )
+
+                    If ( !Empty(c_Mensagem) )
+                        c_Mensagem += ";"+CRLF
+                    EndIf
+
+                    c_Mensagem += "Alterados: "+CValToChar(n_QtdAlt)
+                EndIf
+
+                If ( n_QtdExc > 0 )
+
+                    If ( !Empty(c_Mensagem) )
+                        c_Mensagem += ";"+CRLF
+                    EndIf
+
+                    c_Mensagem += "Excluídos: "+CValToChar(n_QtdExc)
+                EndIf
+
+                c_Mensagem += "."
+
+                FWAlertSuccess("Alterações incluídas!"+CRLF+" Seguem a quantidade de alterações: "+CRLF+c_Mensagem, "Sucesso - INCFOREX")
+
+            EndIf
+
+        EndIf
+
+    EndIf
+
+    FWFreeArray(a_Linhas)
+
+Return Nil
+
+/*/{Protheus.doc} Processa
+    Função de processamento responsável por pegar os dados do CSV
+    @type function
+    @version 1.0
+    @author Gabriel Lacerda Correia
+    @since 28/09/2026
+    @param a_Linhas, array, O array de linhas já posicionado na linha de importação.
+    @param [n_QtdAlt],   numeric,     A quantidade de registros   alterados.
+    @param [n_QtdInt],   numeric,     A quantidade de registros   incluídos.
+    @param [n_QtdExc],   numeric,     A quantidade de registros   excluídos.
+    @param [n_QtdInat],  numeric,    A quantidade de registros   inativados.
+    @param [n_QtdAtiv],  numeric,    A quantidade de registros   ativados.
+    @param [c_Mensagem], character, A mensagem de erro, caso necessário.
+    @return logical, Se a alteração foi feita com sucesso.
+    /*/
+Static Function Processa(a_Linhas, n_QtdAlt, n_QtdInt, n_QtdExc, c_Mensagem)
+    
+    Local a_AreaATU    := GetArea()
+    Local a_AreaSA2    := {}
+    Local a_Details    := {0,0,0,0,0,0}
+    Local c_Operacao   := ""
+    Local n_i          := 0
+    Local l_Ret        := .T.
+
+    Default a_Linhas   := {}
+
+    DbSelectArea("SA2")
+    a_AreaSA2 := SA2->(GetArea())
+
+    Begin Transaction
+
+        For n_i := 5 To Len(a_Linhas)
+
+            // Ignora linhas vazias (ex.: linha em branco no fim do arquivo)
+            If ( Empty(a_Linhas[n_i]) .OR. Empty(AllTrim(a_Linhas[n_i][1])) )
+                Loop
+            EndIf
+
+            c_Operacao := Upper(AllTrim(a_Linhas[n_i][1]))
+
+            If ( !(c_Operacao == "A" .OR. c_Operacao == "E") .AND. l_Ret )
+                c_Mensagem := "Tipo de operação inválida na linha: " + CValToChar(n_i)
+                l_Ret := .F.
+            EndIf
+
+            If ( !ExecutaOperacao(c_Operacao, a_Linhas[n_i], a_Linhas[2], @c_Mensagem, @a_Details) .AND. l_Ret )
+                c_Mensagem := "Linha " + CValToChar(n_i) + ": " + c_Mensagem
+                l_Ret := .F.
+            EndIf
+
+            If ( !l_Ret )
+                DisarmTransaction()
+                Exit
+            EndIf
+
+        Next n_i
+
+    End Transaction
+
+    If ( l_Ret )
+        // Passa os contadores do MVCExec para os parâmetros por referência
+        n_QtdInt := a_Details[1]
+        n_QtdAlt := a_Details[2]
+        n_QtdExc := a_Details[3]
+    EndIf
+        
+    RestArea(a_AreaSA2)
+    RestArea(a_AreaATU)
+
+Return ( l_Ret )
+
+/*/{Protheus.doc} ExecutaOperacao
+    Executa ordem de operação
+    @type   Static Function
+    @author Gabriel Lacerda Correia
+    @since 28/10/2026
+    @version 1.0
+    @param c_Operacao, character, operacao a ser executada
+    @return a_Linhas, array, linhas do csv
+    /*/
+Static Function ExecutaOperacao(c_Operacao, a_Linha, a_NomesCampos, c_Mensagem, a_Details)
+
+    Local l_Ret       := .T.
+    Local a_DadCab    := {}
+    Local a_CposCab   := {}
+    Local c_Cod       := AllTrim(a_Linha[3])
+    Local c_Loja      := AllTrim(a_Linha[4])
+    Local c_NewCod    := ""
+    Local n_Opera     := 0
+    Local n_i         := 0
+    Local a_Antes     := {}
+    Local n_Recno     := 0
+
+    // Colunas 1 a 4 são controle (operação, filial, código, loja); dados começam na 5
+    For n_i := 5 To Len(a_Linha)
+        If ( !Empty(a_Linha[n_i]) )
+            AAdd(a_CposCab, {AllTrim(a_NomesCampos[n_i]), ConvValor(a_NomesCampos[n_i], a_Linha[n_i]), "S"})
+        EndIf
+    Next n_i
+
+    If ( c_Operacao == "A" )
+
+        If ( Empty(c_Cod) .AND. Empty(c_Loja) )
+
+            DbSelectArea("SA2")
+
+            // Inclusão com código novo
+            n_Opera  := 3
+            c_NewCod := GetSXENum("SA2", "A2_COD")
+            c_Loja   := "001" 
+
+            SA2->(dbSetOrder(1))
+        
+            While SA2->(dbSeek(xFilial("SA2")+c_NewCod))
+                ConfirmSX8()
+                c_NewCod := GetSXENum("SA2","A2_COD")
+            EndDo
+
+            AAdd(a_CposCab, {"A2_COD",  c_NewCod, "S"})
+            AAdd(a_CposCab, {"A2_LOJA", c_Loja,   "S"})
+
+        ElseIf (!Empty(c_Cod) .AND. !Empty(c_Loja))
+
+            DbSelectArea("SA2")
+
+            SA2->(DbSetOrder(1))
+            If ( SA2->(DbSeek(xFilial("SA2")+PadR(c_Cod, TamSX3("A2_COD")[1])+PadR(c_Loja, TamSX3("A2_LOJA")[1]))) )
+                n_Opera := 4   // existe: altera
+            EndIf
+
+        Else
+
+            c_Mensagem := "Não existe um caso de inclusão ou alteração com código ou loja vazia. Para inclusão de fornecedor, ambos devem estar vazios. Para alteração, ambos devem estar preenchidos."
+            l_Ret := .F.
+
+        EndIf
+
+    ElseIf ( c_Operacao == "E" )
+
+        DbSelectArea("SA2")
+        SA2->(DbSetOrder(1))
+        If ( !SA2->(DbSeek(xFilial("SA2")+PadR(c_Cod, TamSX3("A2_COD")[1])+PadR(c_Loja, TamSX3("A2_LOJA")[1]))) )
+            c_Mensagem := "Fornecedor "+c_Cod+"/"+c_Loja+" não encontrado para exclusão."
+            Return .F.
+        EndIf
+        n_Opera   := 5
+        a_CposCab := {}
+
+    EndIf
+
+    If ( l_Ret .AND. ( n_Opera == 4 .OR. n_Opera == 5 ) )   // ver observação sobre o tipo abaixo
+        n_Recno := SA2->(Recno())
+        a_Antes := SnapSA2(a_CposCab)
+    EndIf
+
+    If (l_Ret)
+        
+        AAdd(a_DadCab, {"SA2", "SA2MASTER", a_CposCab})
+        l_Ret := U_MVCExec(n_Opera, "MATA020", a_DadCab, /*a_DadItens*/, @c_Mensagem, @a_Details)
+
+        If(l_Ret)
+
+            // Na inclusão o recno só existe depois do commit
+            If ( n_Opera == 3 )
+
+                SA2->(DbSetOrder(1)) //A2_FILIAL + A2_COD + A2_LOJA
+                If ( SA2->(DbSeek(xFilial("SA2")+PadR(c_NewCod, TamSX3("A2_COD")[1])+PadR(c_Loja, TamSX3("A2_LOJA")[1]))) )
+                    n_Recno := SA2->(Recno())
+                EndIf
+                c_Cod := c_NewCod
+
+            EndIf
+
+            GravaLogSA2(n_Opera, c_Cod, c_Loja, n_Recno, a_CposCab, a_Antes)
+
+        EndIf
+
+    EndIf
+
+    // Controle de numeração: só confirma se gravou
+    If ( !Empty(c_NewCod) )
+        If ( l_Ret )
+            ConfirmSX8()
+        Else
+            RollBackSX8()
+        EndIf
+    EndIf
+
+Return l_Ret
+
+/*/{Protheus.doc} ConvValor
+    Função que faz a conversão de campos que vem do CSV
+    @type  Static Function
+    @author Gabriel Lacerda Correia
+    @since 19/10/2026
+    @version 1.0
+    @param c_Campo, character, campo do dicionario de dados
+    @param c_Valor, character, conteúdo do campo
+    @return x_Ret, ?, Pode retornar data, caractere, numérico
+    /*/
+Static Function ConvValor(c_Campo, c_Valor)
+
+    Local c_Tipo := GetSx3Cache(c_Campo, "X3_TIPO")
+    Local n_Tam  := TamSX3(c_Campo)[1]
+    Local x_Ret  := AllTrim(c_Valor)
+
+    Do Case
+        Case c_Tipo == "N"
+            x_Ret := Val(StrTran(x_Ret, ",", "."))
+
+        Case c_Tipo == "D"
+            x_Ret := CToD(x_Ret)
+
+        Case c_Tipo == "C"
+            // Garante que o valor tenha exatamente o tamanho do campo
+            x_Ret := PadR(x_Ret, n_Tam)          // ou Left(x_Ret, n_Tam) se preferir cortar
+
+        Case c_Tipo == "L"
+            x_Ret := (Upper(x_Ret) $ "S|1|T|.T.|SIM")
+
+    EndCase
+
+Return x_Ret
+
+/*/{Protheus.doc} SalvaArquivo
+    Função responsável por salvar o arquivo na máquina do usuário
+    @type  Static Function
+    @author Gabriel Lacerda Correia
+    @since 19/10/2026
+    @version 1.0
+    @param c_Caminho, character, caminho que será salvo o arquivo
+    @param c_NomeArquivo, character, nome do arquivo csv
+    @param a_Linhas, array, array que vai virar o arquivo csv
+/*/
+Static Function SalvaArquivo(c_Caminho, c_NomeArquivo, a_Linhas)
+    
+    Local n_i       := 0 as numeric
+    Local n_Handle  := 0 as numeric
+
+    // Grava o arquivo (agora com cabeçalho + dados)
+    n_Handle := FCreate(c_Caminho+c_NomeArquivo /*<cArquivo>*/, /*[nAtributo]*/, /*[xParam3]*/, /*[lChangeCase]*/)
+
+    If ( n_Handle == -1 )
+
+        FWAlertError(Str(Ferror()), "Erro ao criar arquivo - INCFOREX")
+
+    Else
+        For n_i := 1 To Len(a_Linhas)
+            FWrite(n_Handle/*<nHandle>*/, a_Linhas[n_i]/*<cBuffer>*//*,[nQtdBytes]*/)
+        Next n_i
+
+        FClose(n_Handle)
+
+        FWAlertSuccess("Modelo de alteração de clientes criado com sucesso!", "Sucesso - INCFOREX") 
+        ShellExecute("OPEN", c_NomeArquivo, "", c_Caminho, 1)
+    EndIf
+
+Return Nil
+
+/*/{Protheus.doc} ExpArq
+Exporta o arquivo com as informações das entidades de acordo com os parâmetros.
+@type function
+@version 1.0
+@author Gabriel Lacerda Correia
+@since 28/10/2026
+/*/
+Static Function ExpArq(n_ExportType)
+
+    Local c_NomeArquivo         := ""                       as character
+    Local c_SelectFields        := ""                       as character
+    Local c_LineData            := ""                       as character
+
+    Local a_Cabecalho           := {}                       as array
+    Local a_Linhas              := {"", CRLF, CRLF, CRLF}   as array
+    Local c_Perg                := ""                       as character
+    Local c_IdentificacaoArq    := ""                       as character
+    Local c_AliasQRY            := GetNextAlias()           as character
+    Local c_Caminho             := ""                       as character
+    Local n_i                   := 0                        as numeric
+
+    //Pergunta o caminho para salvar o arquivo
+    c_Caminho := cGetFile(""/*[c_Mascara]*/, "Selecione um Local para salvar o arquivo."/*[cTitulo]*/,/*[nMascpadrao]*/,/*[cDirinicial]*/, /*[lAbrir]*/, GETF_RETDIRECTORY+GETF_LOCALHARD+GETF_LOCALFLOPPY/*[nOpcoes]*/,/*[lArvore]*/,/*[lKeepCase]*/)
+
+    If ( !Empty(c_Caminho) )
+
+        //Se não tiver contra-barra no final, coloca
+        If ( Right(c_Caminho, 1) <> "\" )
+            c_Caminho += "\"
+        EndIf
+
+        //Gera cabeçalho
+        a_Cabecalho := RetCab(@c_NomeArquivo, @c_IdentificacaoArq)
+
+        //Exportação com dados
+        If (n_ExportType == 1)
+
+            //Valida as perguntas
+            c_Perg := ValPerg("1")
+
+            If (Pergunte(c_Perg, .T., "Parâmetros para a alteração de fornecedores"))
+
+                // Adiciona as linhas de cabeçalho ao array principal
+                a_Linhas[1] += a_Cabecalho[1]+";"
+                a_Linhas[2] += a_Cabecalho[2]+";"
+                a_Linhas[3] += a_Cabecalho[3]+";"
+                a_Linhas[4] += a_Cabecalho[4]+";"
+
+                // Pega a lista de campos (da linha 2 do cabeçalho) para o SQL
+                a_Fields := StrTokArr2(a_Cabecalho[2]/*<cValue>*/, ";"/*<cToken>*/, .F./*[lEmptyStr]*/)
+
+                // Monta a string APENAS do SELECT
+                c_SelectFields := "%"
+                For n_i := 2 To Len(a_Fields)
+
+                    c_SelectFields += " SA2." + AllTrim(a_Fields[n_i])
+
+                    If n_i < Len(a_Fields)
+                        c_SelectFields += " , "
+                    EndIf
+
+                Next n_i
+                c_SelectFields += "%"
+
+                // Executa a Query
+                BeginSQL Alias c_AliasQRY
+                    SELECT %Exp:c_SelectFields%
+                    FROM %Table:SA2% SA2 (NOLOCK)
+                    WHERE SA2.A2_FILIAL  BETWEEN %Exp:MV_PAR01% AND %Exp:MV_PAR02% 
+                    AND SA2.A2_COD       BETWEEN %Exp:MV_PAR03% AND %Exp:MV_PAR04%
+                    AND SA2.A2_LOJA      BETWEEN %Exp:MV_PAR05% AND %Exp:MV_PAR06%
+                    AND SA2.D_E_L_E_T_ = ' '
+                    ORDER BY SA2.A2_COD, SA2.A2_LOJA
+                EndSQL
+
+                If (c_AliasQRY)->(!EoF())
+
+                    // Processa os resultados e adiciona em a_Linhas
+                    While (c_AliasQRY)->(!EoF())
+
+                        c_LineData := CRLF + ";" // Reseta a linha de dados e pula a primeira coluna 
+
+                        For n_i := 1 To Len(a_Fields)
+                            
+                            x_Value := (c_AliasQRY)->(FieldGet(n_i)) 
+                            
+                            c_LineData += FormataCpoCSV(x_Value) + ";"
+
+                        Next n_i
+                        
+                        AAdd(a_Linhas, c_LineData) // Adiciona a linha de dados
+
+                        (c_AliasQRY)->(DbSkip())
+
+                    EndDo
+
+                EndIf
+
+                (c_AliasQRY)->(DbCloseArea())
+
+                // Grava o arquivo (agora com cabeçalho + dados)
+                SalvaArquivo(c_Caminho, c_NomeArquivo, a_Linhas)
+
+            EndIf
+
+        // Exportação sem dados
+        ElseIf(n_ExportType == 2)
+
+            // Adiciona as linhas de cabeçalho ao array principal
+            a_Linhas[1] += a_Cabecalho[1]+";"
+            a_Linhas[2] += a_Cabecalho[2]+";"
+            a_Linhas[3] += a_Cabecalho[3]+";"
+            a_Linhas[4] += a_Cabecalho[4]+";"
+
+            SalvaArquivo(c_Caminho, c_NomeArquivo, a_Linhas)
+
+        EndIf 
+
+    EndIf
+
+Return Nil
+
+/*/{Protheus.doc} FormataCpoCSV
+Formata um valor (qualquer tipo) para uma string segura para CSV.
+@type Static Function
+@author Gabriel Lacerda Correia
+@since 28/10/2026
+@param x_Value, variant, O valor a ser formatado.
+@return character, O valor formatado como string.
+/*/
+Static Function FormataCpoCSV(x_Value)
+
+    Local c_Ret := ""
+
+    Do Case
+        Case ValType(x_Value) == "C"
+            c_Ret := AllTrim(x_Value)
+        Case ValType(x_Value) == "N"
+            c_Ret := CValToChar(x_Value) 
+        Case ValType(x_Value) == "D"
+
+            If Empty(x_Value)
+                c_Ret := ""
+            Else
+                c_Ret := DToC(x_Value) 
+            EndIf
+
+        Case ValType(x_Value) == "L"
+            c_Ret := If(x_Value, "S", "N")
+        Otherwise
+            c_Ret := ""
+    EndCase
+
+    c_Ret := StrTran(c_Ret, ";", ",")   // Tratativa para ponto e virgula no conteúdo do campo
+    c_Ret := StrTran(c_Ret, '"', '""')  // Tratativa para aspas no conteúdo do campo
+    
+    If ("," $ c_Ret)
+        c_Ret := '"' + c_Ret + '"'      // Adiciona aspas para o excel não considerar a virgula como separador 
+    EndIf
+
+Return ( c_Ret )
+
+/*/{Protheus.doc} ValPerg
+Valido as perguntas de acordo com o modelo.
+@type function
+@version 1.0
+@author Gabriel Lacerda Correia
+@since 21/10/2026
+@param c_Modelo, character, O modelo.
+@return c_Perg, O grupo de perguntas.
+/*/
+Static Function ValPerg(c_Modelo)
+
+    Local a_Regs    := {}
+    Local c_Perg    := "INCFOREX"+c_Modelo
+
+    If ( c_Modelo == "1")
+
+        //- Grupo/Ordem/Pergunta/Variavel/Tipo/Tamanho/Decimal/Presel/GSC/Valid/Var01/Def01/Cnt01/Var02/Def02/Cnt02/Var03/Def03/Cnt03/Var04/Def04/Cnt04/Var05/Def05/Cnt05
+        aAdd(a_Regs, {{"X1_PERGUNT",  "Da Filial:  "        }, {"X1_TIPO", "C"}, {"X1_TAMANHO", TamSX3("A2_FILIAL")[1]}})
+        aAdd(a_Regs, {{"X1_PERGUNT",  "Até a Filial:  "     }, {"X1_TIPO", "C"}, {"X1_TAMANHO", TamSX3("A2_FILIAL")[1]}})
+        aAdd(a_Regs, {{"X1_PERGUNT",  "Do Fornecedor:  "    }, {"X1_TIPO", "C"}, {"X1_TAMANHO", TamSX3("A2_COD")[1]   }})
+        aAdd(a_Regs, {{"X1_PERGUNT",  "Até o Fornecedor: "  }, {"X1_TIPO", "C"}, {"X1_TAMANHO", TamSX3("A2_COD")[1]   }})
+        aAdd(a_Regs, {{"X1_PERGUNT",  "Da Loja: "           }, {"X1_TIPO", "C"}, {"X1_TAMANHO", TamSX3("A2_LOJA")[1]  }})
+        aAdd(a_Regs, {{"X1_PERGUNT",  "Até a Loja: "        }, {"X1_TIPO", "C"}, {"X1_TAMANHO", TamSX3("A2_LOJA")[1]  }})
+
+    ElseIf ( c_Modelo == "Z" )
+
+        aAdd(a_Regs,{{"X1_PERGUNT", "Da data: "           }, {"X1_TIPO", "D"}, {"X1_TAMANHO", 8  }})
+        aAdd(a_Regs,{{"X1_PERGUNT", "Até a data: "        }, {"X1_TIPO", "D"}, {"X1_TAMANHO", 8  }})
+
+    EndIf
+
+    perguntas.U_AtualizaPerguntas(c_Perg, a_Regs)
+
+Return (c_Perg)
+
+/*/{Protheus.doc} RelLog
+Faço o relatório dos logs de alteração.
+@type function
+@version 1.0
+@author Gabriel Lacerda Correia
+@since 28/10/2026
+/*/
+Static Function RelLog()
+
+    Local c_Perg    := ""
+    Local l_OkPerg  := .T.
+    Local c_Logo    := "\" + ALLTRIM(CURDIR()) + "\LogoTReport.bmp"
+
+    Private o_Report  := Nil
+    Private o_SecCab  := Nil
+
+    Private c_AliasRel:= GetNextAlias()
+    Private o_FontCab := TFont():New("Arial"/*[cName]*/,/*[uPar2]*/,12/*[nHeight]*/,/*[uPar4]*/,.T./*[lBold]*/,/*[uPar6]*/,/*[uPar7]*/,/*[uPar8]*/,/*[uPar9]*/,.F./*[lUnderline]*/,.F./*[lItalic]*/)
+    Private o_FontIte := TFont():New("Arial"/*[cName]*/,/*[uPar2]*/,10/*[nHeight]*/,/*[uPar4]*/,.F./*[lBold]*/,/*[uPar6]*/,/*[uPar7]*/,/*[uPar8]*/,/*[uPar9]*/,.F./*[lUnderline]*/,.F./*[lItalic]*/)
+
+    c_Perg := ValPerg("Z")
+
+    While ( .T. )
+
+        If ( Pergunte(c_Perg, .T.) )
+
+            If ( !Empty(MV_PAR01) .AND. !Empty(MV_PAR02))
+
+                l_OkPerg := .T.
+                Exit
+
+            EndIf
+
+        Else
+            l_OkPerg := .F.
+            Exit
+        EndIf
+    EndDo
+
+    If ( l_OkPerg )
+
+        //DefiniÃ§Ãµes/preparaÃ§Ã£o para impressÃ£o do relatÃ³rio
+        o_Report := TReport():New("INCFOREX"/*<cReport>*/, "Log de alteração."/*<cTitle>*/, c_Perg/*<uParam>*/,{|o_Report| PrintReport(o_Report)}/*<bAction>*/,"As alterações que foram feitas."/*<cDescription>*/,/*<lLandscape>*/,/*<uTotalText>*/,/*<lTotalInLine>*/,/*<cPageTText>*/,/*<lPageTInLine>*/,/*<lTPageBreak>*/,/*<nColSpace>*/)
+
+        o_Report:SetLandscape(.T.)
+        o_Report:SetLogo(c_Logo)
+
+        //CriaÃ§Ã£o da seÃ§Ã£o utilizada pelo relatÃ³rio
+        o_SecCab:= TRSection():New(o_Report, "Log arquivos", {c_AliasRel})
+        o_SecCab:SetHeaderPage()
+        o_SecCab:SetTotalInLine(.F.)
+
+        TRCell():New(o_SecCab/*<oParent>*/, "TABELA"   /*<cName>*/, c_AliasRel/*<cAlias>*/, "Desc. Tabela"/*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+        TRCell():New(o_SecCab/*<oParent>*/, "CAMPO"    /*<cName>*/, c_AliasRel/*<cAlias>*/, "Nome campo"  /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+        TRCell():New(o_SecCab/*<oParent>*/, "DESCCPO"  /*<cName>*/, c_AliasRel/*<cAlias>*/, "Desc. campo" /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+        TRCell():New(o_SecCab/*<oParent>*/, "CONT_DE"  /*<cName>*/, c_AliasRel/*<cAlias>*/, "De"          /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+        TRCell():New(o_SecCab/*<oParent>*/, "CONT_PARA"/*<cName>*/, c_AliasRel/*<cAlias>*/, "Para"        /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+        TRCell():New(o_SecCab/*<oParent>*/, "QUEM"     /*<cName>*/, c_AliasRel/*<cAlias>*/, "Responsável" /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+        TRCell():New(o_SecCab/*<oParent>*/, "DATA"     /*<cName>*/, c_AliasRel/*<cAlias>*/, "Data"        /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+        TRCell():New(o_SecCab/*<oParent>*/, "HORA"     /*<cName>*/, c_AliasRel/*<cAlias>*/, "Hora"        /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*<cAlign>*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/, .T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+        TRCell():New(o_SecCab/*<oParent>*/, "OBS"      /*<cName>*/, c_AliasRel/*<cAlias>*/, "Observação"  /*<cTitle>*/, ""/*<cPicture>*/,/*<nSize>*/, .T./*<lPixel>*/,/*<bBlock>*/,/*cAlign*/,/*<lLineBreak>*/,/*<cHeaderAlign>*/,/*<lCellBreak>*/,/*<nColSpace>*/,.T./*<lAutoSize>*/,/*<nClrBack>*/,/*<nClrFore>*/,/*<lBold>*/)
+
+        o_Report:PrintDialog()
+
+        FreeObj(o_Report)
+        FreeObj(o_SecCab)
+    EndIf
+
+Return Nil
+
+/*/{Protheus.doc} PrintReport
+Executo a query do relatório.
+@type function
+@version 1.0
+@author Gabriel Lacerda Correia
+@since 28/10/2026
+@param o_Report, object, O objeto de relatÃ³rio.
+/*/
+Static Function PrintReport(o_Report)
+
+    Local c_Where   := "" 
+
+    c_Where += "%"
+    c_Where += "AND TABELA = 'SA2'"
+    
+
+    If ( !Empty(MV_PAR01) )
+        c_Where += "AND   CAST(QUANDO AS DATE) >= '"+DToS(MV_PAR01)+"'"
+    EndIf
+    If ( !Empty(MV_PAR02) )
+        c_Where += "AND   CAST(QUANDO AS DATE) <= '"+DToS(MV_PAR02)+"'"
+    EndIf
+    c_Where += "%"
+
+    MakeSqlExpr(o_Report:uParam)
+
+    //Altera as fontes
+    o_Report:oFontHeader := o_FontCab
+    o_Report:oFontBody 	 := o_FontIte
+
+    o_Report:Section(1):BeginQuery()	
+
+    BeginSql Alias c_AliasRel
+
+        SELECT 
+                TABELA    = (SELECT X2_NOME FROM  %table:SX2% SX2 (NOLOCK) WHERE X2_CHAVE = TABELA AND D_E_L_E_T_ = '')
+            ,  CAMPO
+            ,  DESCCPO   = CASE WHEN CAMPO = 'D_E_L_E_T_' THEN 'Exclusão'
+                                ELSE (SELECT X3_TITULO FROM %table:SX3% SX3 (NOLOCK) WHERE X3_CAMPO = CAMPO AND D_E_L_E_T_ = '')
+                            END
+            ,  CONT_DE   = CASE 
+                                WHEN CAMPO = 'D_E_L_E_T_' THEN ' '
+                                ELSE DE
+                            END
+            ,  CONT_PARA = CASE 
+                                WHEN CAMPO = 'D_E_L_E_T_' THEN ' '
+                                ELSE PARA
+                            END
+            ,  DATA      = CONVERT(varchar, QUANDO, 103)
+            ,  HORA      = LEFT(CONVERT(varchar, QUANDO, 108),5)
+            ,  QUEM
+            ,  OBS
+
+        FROM TBL_LOG_ALTERACAO_PROTHEUS (NOLOCK)
+        WHERE ORIGEM = 'INCFOREX'
+        %Exp:c_Where%
+
+    EndSql
+
+    //Para pegar a query basta utilar o comando GetLastQuery()[2]
+
+    o_Report:Section(1):EndQuery(/*Array com os parametros do tipo Range*/)
+
+    o_SecCab:Print()
+
+Return Nil
+
+/*/{Protheus.doc} SnapSA2
+Guarda o valor antigo do registro antes de ser alterado, para poder gravar no log apenas os campos que mudaram.
+@type Static Function
+@version 1.0
+@author Gabriel Lacerda Correia
+@since 26/10/2026
+@param a_Campos, array, Array {campo, valor, "S"} montado em ExecutaOperacao.
+@return array, {{campo, valor_atual}, ...}
+/*/
+Static Function SnapSA2(a_Campos)
+
+    Local a_Snap := {}
+    Local n_i    := 0
+    Local n_Pos  := 0
+
+    For n_i := 1 To Len(a_Campos)
+
+        n_Pos := SA2->(FieldPos(a_Campos[n_i][1])) // Posição do campo no dicionário de dados
+
+        If ( n_Pos > 0 )
+            AAdd(a_Snap, {a_Campos[n_i][1], SA2->(FieldGet(n_Pos))}) // Adiciona o campo e o valor atual ao array de snapshot
+        EndIf
+
+    Next n_i
+
+Return ( a_Snap )
+
+
+/*/{Protheus.doc} GravaLogSA2
+Grava no log (U_LogAlt) as alterações feitas pelo INCFOREX.
+@type Static Function
+@version 1.0
+@author Gabriel Lacerda Correia
+@since 26/10/2026
+@param n_Opera, numeric, Tipo de operação (3=Inclusão, 4=Alteração, 5=Exclusão)
+@param c_Cod, character, Código do fornecedor
+@param c_Loja, character, Loja do fornecedor
+@param n_Recno, numeric, Recno do registro alterado
+@param a_CposCab, array, Array {campo, valor, "S"} montado em ExecutaOperacao.
+@param a_Antes, array, Array {{campo, valor_atual}, ...} montado em SnapSA2.
+/*/
+Static Function GravaLogSA2(n_Opera, c_Cod, c_Loja, n_Recno, a_CposCab, a_Antes)
+
+    Local c_Origem := "INCFOREX"   // precisa ser igual ao filtro do PrintReport
+    Local c_Obs    := "Fornecedor "+AllTrim(c_Cod)+"/"+AllTrim(c_Loja)
+    Local c_De     := ""
+    Local c_Para   := ""
+    Local n_i      := 0
+    Local n_Pos    := 0
+
+    Do Case
+
+        Case ( n_Opera == 3 )   // Inclusão: uma linha por campo preenchido
+            For n_i := 1 To Len(a_CposCab)
+                c_Para := FmtLog(a_CposCab[n_i][2])
+                U_LogAlt("SA2", n_Recno, a_CposCab[n_i][1], "", c_Para, Nil, Nil, c_Origem, "Inclusão - "+c_Obs)
+            Next n_i
+
+        Case ( n_Opera == 4 )   // Alteração: só o que mudou
+
+            For n_i := 1 To Len(a_CposCab)
+
+                n_Pos  := AScan(a_Antes, {|a_X| a_X[1] == a_CposCab[n_i][1]})
+                c_De   := IIF(n_Pos > 0, FmtLog(a_Antes[n_Pos][2]), "")
+                c_Para := FmtLog(a_CposCab[n_i][2])
+
+                If ( !(c_De == c_Para) )
+                    U_LogAlt("SA2", n_Recno, a_CposCab[n_i][1], c_De, c_Para, Nil, Nil, c_Origem, "Alteração - "+c_Obs)
+                EndIf
+            Next n_i
+
+        Case ( n_Opera == 5 )   // Exclusão
+
+            U_LogAlt("SA2", n_Recno, "D_E_L_E_T_", " ", "*", Nil, Nil, c_Origem, "Exclusão - "+c_Obs)
+
+    EndCase
+
+Return Nil
+
+/*/{Protheus.doc} FmtLog
+    Converte qualquer tipo para texto seguro para o INSERT do LogAlt.
+    @type Static Function
+    @version 1.0
+    @author Gabriel Lacerda Correia
+    @since 26/10/2026
+    @param x_Valor, variant, O valor a ser convertido.
+    @return c_Ret, character, O valor convertido para string segura para o log.
+/*/
+Static Function FmtLog(x_Valor)
+
+    Local c_Ret := ""
+
+    Do Case
+        Case ValType(x_Valor) == "C" ; c_Ret := AllTrim(x_Valor)
+        Case ValType(x_Valor) == "N" ; c_Ret := AllTrim(CValToChar(x_Valor))
+        Case ValType(x_Valor) == "D" ; c_Ret := IIF(Empty(x_Valor), "", DToC(x_Valor))
+    EndCase
+
+    c_Ret := StrTran(c_Ret, "'", "''")   // a LogAlt monta o INSERT por concatenação
+    c_Ret := Left(c_Ret, 255)            // tamanho das colunas DE/PARA
+
+Return ( c_Ret )
